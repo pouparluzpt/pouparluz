@@ -2,14 +2,10 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>EnergyGlass · Gestão Comercializadoras PT</title>
-    <!-- Leaflet CSS + JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <style>
         * {
             margin: 0;
@@ -24,16 +20,14 @@
             padding: 20px;
         }
 
-        /* Liquid glass effect */
         .glass-card {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-radius: 48px;
             border: 1px solid rgba(255, 255, 255, 0.3);
             box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.2);
             padding: 24px;
-            transition: all 0.2s ease;
         }
 
         .app-container {
@@ -41,7 +35,6 @@
             margin: 0 auto;
         }
 
-        /* menu bar */
         .menu-glass {
             background: rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(24px);
@@ -56,8 +49,7 @@
         }
 
         .btn {
-            background: rgba(0, 87, 163, 0.85);
-            backdrop-filter: blur(4px);
+            background: rgba(0, 87, 163, 0.9);
             border: none;
             padding: 10px 22px;
             border-radius: 40px;
@@ -86,22 +78,21 @@
             padding: 12px 16px;
             border-radius: 32px;
             border: none;
-            background: rgba(255, 255, 255, 0.85);
+            background: rgba(255, 255, 255, 0.9);
             font-size: 0.9rem;
             outline: none;
-            transition: 0.2s;
         }
 
         input:focus, select:focus, textarea:focus {
             background: white;
-            box-shadow: 0 0 0 3px rgba(0, 120, 255, 0.5);
+            box-shadow: 0 0 0 3px rgba(0, 120, 255, 0.3);
         }
 
         label {
             font-weight: 600;
             font-size: 0.8rem;
             letter-spacing: 0.5px;
-            color: rgba(255, 255, 255, 0.9);
+            color: rgba(255, 255, 255, 0.95);
             margin-bottom: 6px;
             display: block;
         }
@@ -122,21 +113,27 @@
             overflow: hidden;
             margin-top: 6px;
             border: 1px solid rgba(255,255,255,0.4);
+            background: rgba(0,0,0,0.2);
         }
 
-        .badge-glass {
-            background: rgba(0,0,0,0.3);
-            backdrop-filter: blur(8px);
-            border-radius: 30px;
-            padding: 4px 12px;
-            font-size: 0.7rem;
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin: 16px 0 12px 0;
             color: white;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            border-left: 4px solid #ffd966;
+            padding-left: 12px;
+        }
+
+        .section-title:first-of-type {
+            margin-top: 0;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            background: rgba(255,255,240,0.1);
+            background: rgba(0,0,0,0.2);
             border-radius: 28px;
             overflow: hidden;
         }
@@ -146,6 +143,10 @@
             text-align: left;
             border-bottom: 1px solid rgba(255,255,255,0.2);
             color: white;
+        }
+
+        th {
+            background: rgba(0,0,0,0.3);
         }
 
         .login-overlay {
@@ -166,193 +167,120 @@
             width: 380px;
         }
 
-        .status-badge {
+        .success-msg {
             background: #2ecc71;
             border-radius: 40px;
-            padding: 4px 12px;
-            font-size: 0.7rem;
+            padding: 10px;
+            text-align: center;
+            margin-bottom: 16px;
+            color: white;
             font-weight: bold;
         }
 
-        .section-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 20px;
+        .badge {
+            background: rgba(0,0,0,0.3);
+            border-radius: 30px;
+            padding: 4px 12px;
+            font-size: 0.7rem;
             color: white;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
-        button:active { transform: scale(0.97); }
+
+        button:hover { opacity: 0.9; transform: scale(0.98); }
+        
+        @media (max-width: 800px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            body { padding: 12px; }
+        }
     </style>
 </head>
 <body>
-<div id="appRoot"></div>
+<div id="appRoot" class="app-container"></div>
+
 <script>
-    // ------------------------------- FIREBASE CONFIG ---------------------------------
-    const firebaseConfig = {
-        apiKey: "AIzaSyDJstVG01GJgoz0szmwEputGQZiHOp8DgY",
-        authDomain: "poupar-luz.firebaseapp.com",
-        projectId: "poupar-luz",
-        storageBucket: "poupar-luz.firebasestorage.app",
-        messagingSenderId: "183233905501",
-        appId: "1:183233905501:web:9a75b48f963748803bdeb4",
-        measurementId: "G-PY2XTSBECP"
-    };
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    // Forçar regras de escrita (se as regras estiverem permissivas). Vamos usar com tratamento de erro.
-
-    // coleções
-    const CLIENTS_COLL = "clientes_energia";
-    const USERS_COLL = "colaboradores";
-
-    // variáveis globais
+    // ==================== DADOS GLOBAIS (localStorage - 100% funcional) ====================
     let currentUser = null;
     let clientsArray = [];
     let usersArray = [];
 
-    // helper timestamp
-    const nowDateTime = () => new Date().toLocaleString("pt-PT");
-
-    // load data from firestore
-    async function loadFirebaseData() {
-        try {
-            const clientsSnap = await db.collection(CLIENTS_COLL).get();
+    // Carregar dados do localStorage
+    function loadLocalData() {
+        const storedClients = localStorage.getItem("energy_clients");
+        if (storedClients) {
+            clientsArray = JSON.parse(storedClients);
+        } else {
             clientsArray = [];
-            clientsSnap.forEach(doc => clientsArray.push({ id: doc.id, ...doc.data() }));
-            
-            const usersSnap = await db.collection(USERS_COLL).get();
-            usersArray = [];
-            if (usersSnap.empty) {
-                // criar usuários padrão
-                const defaultUsers = [
-                    { username: "admin", password: "admin123", role: "admin", nomeColab: "Administrador" },
-                    { username: "vendedor", password: "vender123", role: "vendedor", nomeColab: "Joana Vendas" }
-                ];
-                for (const u of defaultUsers) {
-                    const ref = await db.collection(USERS_COLL).add(u);
-                    usersArray.push({ ...u, id: ref.id });
-                }
-            } else {
-                usersSnap.forEach(doc => usersArray.push({ id: doc.id, ...doc.data() }));
-            }
-        } catch (err) {
-            console.warn("Firebase read error, usando fallback local", err);
-            // Fallback para nao quebrar a UX
-            const localClients = localStorage.getItem("energy_clients_fb");
-            if(localClients) clientsArray = JSON.parse(localClients);
-            const localUsers = localStorage.getItem("energy_users_fb");
-            if(localUsers) usersArray = JSON.parse(localUsers);
-            if(!usersArray.length) usersArray = [
-                { username: "admin", password: "admin123", role: "admin", nomeColab: "Administrador" },
-                { username: "vendedor", password: "vender123", role: "vendedor", nomeColab: "Joana Vendas" }
+        }
+        
+        const storedUsers = localStorage.getItem("energy_users");
+        if (storedUsers) {
+            usersArray = JSON.parse(storedUsers);
+        } else {
+            usersArray = [
+                { id: "1", username: "admin", password: "admin123", role: "admin", nomeColab: "Administrador" },
+                { id: "2", username: "vendedor", password: "vender123", role: "vendedor", nomeColab: "Joana Vendas" }
             ];
+            saveLocalData();
         }
     }
 
-    async function saveClientToFirebase(clientObj) {
-        try {
-            if (clientObj.id && clientObj.id.length > 5) {
-                await db.collection(CLIENTS_COLL).doc(clientObj.id).set(clientObj);
-            } else {
-                const newRef = await db.collection(CLIENTS_COLL).add(clientObj);
-                clientObj.id = newRef.id;
-            }
-            // atualizar array local
-            const idx = clientsArray.findIndex(c => c.id === clientObj.id);
-            if (idx !== -1) clientsArray[idx] = clientObj;
-            else clientsArray.push(clientObj);
-            // backup local
-            localStorage.setItem("energy_clients_fb", JSON.stringify(clientsArray));
-            return true;
-        } catch (err) {
-            console.error("firestore error, salvando local:", err);
-            // fallback local
-            if (clientObj.id && clientObj.id.length > 5) {
-                const idx = clientsArray.findIndex(c => c.id === clientObj.id);
-                if (idx !== -1) clientsArray[idx] = clientObj;
-                else clientsArray.push(clientObj);
-            } else {
-                clientObj.id = Date.now().toString();
-                clientsArray.push(clientObj);
-            }
-            localStorage.setItem("energy_clients_fb", JSON.stringify(clientsArray));
-            return true;
-        }
+    function saveLocalData() {
+        localStorage.setItem("energy_clients", JSON.stringify(clientsArray));
+        localStorage.setItem("energy_users", JSON.stringify(usersArray));
     }
 
-    async function deleteClientFirebase(id) {
-        try {
-            await db.collection(CLIENTS_COLL).doc(id).delete();
-            clientsArray = clientsArray.filter(c => c.id !== id);
-            localStorage.setItem("energy_clients_fb", JSON.stringify(clientsArray));
-        } catch (err) {
-            clientsArray = clientsArray.filter(c => c.id !== id);
-            localStorage.setItem("energy_clients_fb", JSON.stringify(clientsArray));
-        }
+    // Helpers
+    function nowDateTime() {
+        return new Date().toLocaleString("pt-PT");
     }
 
-    async function saveUserToFirebase(userObj, userId = null) {
-        try {
-            if (userId) {
-                await db.collection(USERS_COLL).doc(userId).update(userObj);
-                const idx = usersArray.findIndex(u => u.id === userId);
-                if (idx !== -1) usersArray[idx] = { ...userObj, id: userId };
-            } else {
-                const ref = await db.collection(USERS_COLL).add(userObj);
-                userObj.id = ref.id;
-                usersArray.push(userObj);
-            }
-            localStorage.setItem("energy_users_fb", JSON.stringify(usersArray));
-        } catch (err) {
-            if (!userId) userObj.id = Date.now().toString();
-            if (!userId) usersArray.push(userObj);
-            else {
-                const idx = usersArray.findIndex(u => u.id === userId);
-                if (idx !== -1) usersArray[idx] = { ...userObj, id: userId };
-            }
-            localStorage.setItem("energy_users_fb", JSON.stringify(usersArray));
-        }
+    function escapeHtml(str) {
+        if (!str) return "";
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
     }
 
-    async function deleteUserFirebase(userId) {
-        try {
-            await db.collection(USERS_COLL).doc(userId).delete();
-            usersArray = usersArray.filter(u => u.id !== userId);
-            localStorage.setItem("energy_users_fb", JSON.stringify(usersArray));
-        } catch (err) {
-            usersArray = usersArray.filter(u => u.id !== userId);
-            localStorage.setItem("energy_users_fb", JSON.stringify(usersArray));
-        }
-    }
-
-    // dicas script
+    // Dica de vendas
     function getScriptHint() {
-        const tips = ["✨ Estratégia: Ofereça análise gratuita de consumo", "📞 Script: 'A partir de hoje pode poupar 12% na fatura da luz'", "🔥 Gás: escalões até 4 têm bónus fidelização"];
+        const tips = [
+            "✨ Dica: Ofereça análise gratuita de consumo para fidelizar o cliente",
+            "📞 Script sugerido: 'Com a nova comercializadora, pode poupar até 15% na fatura da luz e 10% no gás'",
+            "🔥 Gás: Clientes no escalão 3 ou 4 têm direito a desconto especial na renovação",
+            "⚡ Lembrete: Verifique se a potência contratada é adequada ao perfil do cliente antes de vender",
+            "📅 Vendas antigas: Clientes com mais de 3 meses devem ser contactados para renegociação"
+        ];
         return tips[Math.floor(Math.random() * tips.length)];
     }
 
-    // Mapa
+    // Mapa com Leaflet
     let currentMap = null;
     function initMapPreview(containerId, address) {
         const container = document.getElementById(containerId);
         if (!container) return;
         if (currentMap) currentMap.remove();
-        const map = L.map(containerId).setView([39.4, -8.22], 7);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; OSM' }).addTo(map);
-        if (address && address.trim()) {
+        const map = L.map(containerId).setView([39.3999, -8.2245], 7);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+        if (address && address.trim() !== "") {
             fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address + ", Portugal")}&limit=1`)
-                .then(r => r.json()).then(data => {
-                    if (data.length) {
-                        const lat = parseFloat(data[0].lat), lon = parseFloat(data[0].lon);
+                .then(r => r.json())
+                .then(data => {
+                    if (data && data.length > 0) {
+                        const lat = parseFloat(data[0].lat);
+                        const lon = parseFloat(data[0].lon);
                         map.setView([lat, lon], 14);
                         L.marker([lat, lon]).addTo(map).bindPopup(address).openPopup();
                     }
-                }).catch(e => console.warn);
+                }).catch(e => console.warn("Map error:", e));
         }
         currentMap = map;
     }
 
-    // renderização formulario com blocos
+    // ==================== FORMULÁRIO DE REGISTRO ====================
     function renderForm(editId = null) {
         const existing = editId ? clientsArray.find(c => c.id === editId) : null;
         const isEdit = !!existing;
@@ -365,59 +293,98 @@
 
         const html = `
         <div class="glass-card">
-            <div style="display:flex; justify-content:space-between; align-items:center"><h2 style="color:white">${isEdit ? "✏️ Editar cliente" : "✨ Novo registo"}</h2><span class="badge-glass">${currentUser?.username}</span></div>
-            <div id="formSuccessMsg" style="display:none; background:#2ecc71; border-radius:40px; padding:8px; text-align:center; margin:10px 0"></div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
+                <h2 style="color:white">${isEdit ? "✏️ Editar Cliente" : "✨ Novo Registo"}</h2>
+                <span class="badge">${currentUser?.username}</span>
+            </div>
+            <div id="formSuccessMsg" style="display:none;" class="success-msg"></div>
             <div class="grid-2">
-                <!-- DADOS PESSOAIS -->
+                <!-- Coluna 1: DADOS PESSOAIS -->
                 <div>
-                    <div class="section-title">📋 Dados Pessoais</div>
-                    <div class="form-row"><label>Nome completo</label><input id="nome" value="${escapeHtml(data.nome)}" placeholder="Maria Silva"></div>
+                    <div class="section-title">📋 DADOS PESSOAIS</div>
+                    <div class="form-row"><label>Nome do cliente *</label><input id="nome" value="${escapeHtml(data.nome)}" placeholder="Maria Silva"></div>
                     <div class="form-row"><label>NIF</label><input id="nif" value="${data.nif || ''}" placeholder="123456789"></div>
-                    <div class="form-row"><label>Data nascimento</label><input type="date" id="nasc" value="${data.nasc || ''}"></div>
+                    <div class="form-row"><label>Data de nascimento</label><input type="date" id="nasc" value="${data.nasc || ''}"></div>
                     <div class="form-row"><label>Telefone</label><input id="telefone" value="${data.telefone || ''}" placeholder="912345678"></div>
-                    <div class="form-row"><label>E-mail</label><input id="email" value="${data.email || ''}" type="email"></div>
-                    <div class="form-row"><label>Morada (fornecimento)</label><input id="morada" value="${escapeHtml(data.morada || '')}" placeholder="Rua, cidade"></div>
+                    <div class="form-row"><label>E-mail</label><input id="email" value="${data.email || ''}" type="email" placeholder="cliente@email.pt"></div>
+                    <div class="form-row"><label>Morada (fornecimento)</label><input id="morada" value="${escapeHtml(data.morada || '')}" placeholder="Rua, nº, cidade"></div>
                     <div id="mapPreview" class="map-placeholder"></div>
-                    <div class="form-row"><label>CPE (Luz)</label><input id="cpe" value="${data.cpe || ''}" placeholder="PT0000..."></div>
+                    <div class="form-row"><label>CPE (Luz)</label><input id="cpe" value="${data.cpe || ''}" placeholder="PT0000xxxxxxxx"></div>
                 </div>
-                <!-- LUZ + GÁS -->
+                
+                <!-- Coluna 2: LUZ, GÁS, FATURAÇÃO -->
                 <div>
-                    <div class="section-title">⚡ Luz</div>
-                    <div class="form-row"><label>Potência contratada (kVA)</label><select id="potencia">${[1.15,2.3,3.45,4.6,5.75,6.9,10.35,13.8,20.7].map(p => `<option ${data.potencia==p?'selected':''}>${p}</option>`).join('')}</select></div>
-                    <div class="section-title" style="margin-top:12px">🔥 Gás</div>
+                    <div class="section-title">⚡ LUZ</div>
+                    <div class="form-row"><label>Potência contratada (kVA)</label><select id="potencia">
+                        ${[1.15, 2.3, 3.45, 4.6, 5.75, 6.9, 10.35, 13.8, 20.7].map(p => `<option ${data.potencia == p ? 'selected' : ''}>${p}</option>`).join('')}
+                    </select></div>
+                    
+                    <div class="section-title">🔥 GÁS</div>
                     <div class="form-row"><label>CUI</label><input id="cui" value="${data.cui || ''}" placeholder="CUI número"></div>
-                    <div class="form-row"><label>Escalão de gás (1-4)</label><select id="escalaGas"><option ${data.escalaGas=="1"?"selected":""}>1</option><option ${data.escalaGas=="2"?"selected":""}>2</option><option ${data.escalaGas=="3"?"selected":""}>3</option><option ${data.escalaGas=="4"?"selected":""}>4</option></select></div>
-                    <div class="section-title">🧾 Tipo faturação</div>
-                    <div class="form-row"><label>FE (Fatura Eletrónica)</label><select id="feSelect"><option value="sim" ${data.faturaEletronica ? "selected":""}>Sim</option><option value="nao" ${!data.faturaEletronica ? "selected":""}>Não</option></select></div>
+                    <div class="form-row"><label>Escalão de gás (1 a 4)</label><select id="escalaGas">
+                        <option ${data.escalaGas == "1" ? "selected" : ""}>1</option>
+                        <option ${data.escalaGas == "2" ? "selected" : ""}>2</option>
+                        <option ${data.escalaGas == "3" ? "selected" : ""}>3</option>
+                        <option ${data.escalaGas == "4" ? "selected" : ""}>4</option>
+                    </select></div>
+                    
+                    <div class="section-title">🧾 TIPO DE FATURAÇÃO</div>
+                    <div class="form-row"><label>FE (Fatura Eletrónica)</label><select id="feSelect">
+                        <option value="sim" ${data.faturaEletronica ? "selected" : ""}>Sim</option>
+                        <option value="nao" ${!data.faturaEletronica ? "selected" : ""}>Não</option>
+                    </select></div>
                     <div id="faturaDinamica"></div>
-                    <div class="form-row"><label>Tipo de entrada</label><select id="tipoEntrada"><option ${data.tipoEntrada=="Mudança de comercializadora"?"selected":""}>Mudança de comercializadora</option><option ${data.tipoEntrada=="Mudança de Titularidade"?"selected":""}>Mudança de Titularidade</option><option ${data.tipoEntrada=="Mudança de comercializadora com alteração de titularidade"?"selected":""}>Mudança de comercializadora com alteração de titularidade</option><option ${data.tipoEntrada=="Entrada Direta"?"selected":""}>Entrada Direta</option></select></div>
-                    <div class="form-row"><label>Observações</label><textarea id="obs" rows="2">${escapeHtml(data.obs || '')}</textarea></div>
-                    <div class="form-row"><small style="color:white">🕒 Data/Hora registo: ${data.dataReg}</small></div>
+                    
+                    <div class="form-row"><label>Tipo de entrada</label><select id="tipoEntrada">
+                        <option ${data.tipoEntrada == "Mudança de comercializadora" ? "selected" : ""}>Mudança de comercializadora</option>
+                        <option ${data.tipoEntrada == "Mudança de Titularidade" ? "selected" : ""}>Mudança de Titularidade</option>
+                        <option ${data.tipoEntrada == "Mudança de comercializadora com alteração de titularidade" ? "selected" : ""}>Mudança de comercializadora com alteração de titularidade</option>
+                        <option ${data.tipoEntrada == "Entrada Direta" ? "selected" : ""}>Entrada Direta</option>
+                    </select></div>
+                    
+                    <div class="form-row"><label>Observações</label><textarea id="obs" rows="2" placeholder="Notas importantes sobre o cliente...">${escapeHtml(data.obs || '')}</textarea></div>
+                    <div class="form-row"><small style="color:rgba(255,255,255,0.7)">🕒 Data/Hora registo: ${data.dataReg}</small></div>
                 </div>
             </div>
             <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:20px">
                 <button class="btn btn-secondary" id="cancelFormBtn">Cancelar</button>
-                <button class="btn" id="saveFormBtn">${isEdit ? "Atualizar" : "Guardar cliente + Novo"}</button>
+                <button class="btn" id="saveFormBtn">${isEdit ? "Atualizar" : "Guardar Cliente"}</button>
             </div>
-            <div style="margin-top:16px; background:rgba(0,0,0,0.2); border-radius:28px; padding:10px"><span style="color:#ffe8b6">💬 Dica de vendas: ${getScriptHint()}</span></div>
+            <div style="margin-top:16px; background:rgba(0,0,0,0.25); border-radius:28px; padding:12px">
+                <span style="color:#ffe8b6">💬 Dica de vendas: ${getScriptHint()}</span>
+            </div>
         </div>`;
+
         document.getElementById("mainContent").innerHTML = html;
-        // select values
-        document.getElementById("potencia").value = data.potencia;
-        document.getElementById("escalaGas").value = data.escalaGas;
-        // gerir campos FE
+
+        // Configurar campos dinâmicos de faturação
         const updateFaturaFields = () => {
             const isFe = document.getElementById("feSelect").value === "sim";
             const container = document.getElementById("faturaDinamica");
             if (isFe) {
-                container.innerHTML = `<div class="form-row"><label>IBAN</label><input id="iban" maxlength="25" placeholder="PT50 0000 0000 0000"><span class="badge-glass" id="ibanCount">0/25</span></div>`;
+                container.innerHTML = `<div class="form-row">
+                    <label>IBAN</label>
+                    <input id="iban" maxlength="25" placeholder="PT50 0000 0000 0000 0000">
+                    <span class="badge" id="ibanCount">0/25</span>
+                </div>`;
                 const ibanInput = document.getElementById("iban");
                 if (data.iban) ibanInput.value = data.iban;
                 const countSpan = document.getElementById("ibanCount");
-                ibanInput?.addEventListener("input", (e) => { if(countSpan) countSpan.innerText = e.target.value.length + "/25"; });
-                if(countSpan && ibanInput) countSpan.innerText = ibanInput.value.length + "/25";
+                ibanInput?.addEventListener("input", (e) => { 
+                    if (countSpan) countSpan.innerText = e.target.value.length + "/25"; 
+                });
+                if (countSpan && ibanInput) countSpan.innerText = ibanInput.value.length + "/25";
             } else {
-                container.innerHTML = `<div class="form-row"><label>Morada fatura em papel</label><input id="moradaPapel" placeholder="Morada envio fatura"><button id="copyMoradaBtn" class="btn-sm" type="button">📋 Colar mesma morada</button><div><label style="display:inline"><input type="checkbox" id="difCheck"> Usar morada diferente da fornecimento</label></div></div>`;
+                container.innerHTML = `<div class="form-row">
+                    <label>Morada para envio da fatura em papel</label>
+                    <input id="moradaPapel" placeholder="Morada para envio da fatura">
+                    <button id="copyMoradaBtn" class="btn-sm" type="button" style="margin-top:8px">📋 Colar a mesma morada</button>
+                    <div style="margin-top:8px">
+                        <label style="display:inline-flex; gap:8px; align-items:center">
+                            <input type="checkbox" id="difCheck"> Usar morada diferente da morada de fornecimento
+                        </label>
+                    </div>
+                </div>`;
                 const papelInput = document.getElementById("moradaPapel");
                 if (data.moradaFatura) papelInput.value = data.moradaFatura;
                 document.getElementById("copyMoradaBtn")?.addEventListener("click", () => {
@@ -427,20 +394,26 @@
                 if (data.mesmaMorada === false) document.getElementById("difCheck").checked = true;
             }
         };
-        document.getElementById("feSelect").addEventListener("change", updateFaturaFields);
+        
+        const feSelect = document.getElementById("feSelect");
+        if (feSelect) feSelect.addEventListener("change", updateFaturaFields);
         updateFaturaFields();
 
+        // Mapa
         const moradaField = document.getElementById("morada");
         const updateMap = () => initMapPreview("mapPreview", moradaField.value);
         moradaField.addEventListener("input", updateMap);
         updateMap();
 
-        document.getElementById("saveFormBtn").onclick = async () => {
+        // Salvar cliente
+        document.getElementById("saveFormBtn").onclick = () => {
             const nome = document.getElementById("nome").value.trim();
-            if(!nome) { alert("Nome obrigatório"); return; }
+            if (!nome) { alert("Por favor, preencha o nome do cliente"); return; }
+            
             const isFe = document.getElementById("feSelect").value === "sim";
             let ibanVal = "", moradaFatVal = "", mesmaMoradaFlag = true;
-            if(isFe) {
+            
+            if (isFe) {
                 ibanVal = document.getElementById("iban")?.value || "";
             } else {
                 const moradaPapel = document.getElementById("moradaPapel")?.value || "";
@@ -448,23 +421,45 @@
                 mesmaMoradaFlag = !dif;
                 moradaFatVal = dif ? moradaPapel : document.getElementById("morada").value;
             }
+
             const clienteObj = {
-                id: isEdit ? existing.id : undefined,
-                nome, nif: document.getElementById("nif").value, nasc: document.getElementById("nasc").value,
-                telefone: document.getElementById("telefone").value, email: document.getElementById("email").value,
-                morada: document.getElementById("morada").value, cpe: document.getElementById("cpe").value,
-                potencia: document.getElementById("potencia").value, cui: document.getElementById("cui").value,
-                escalaGas: document.getElementById("escalaGas").value, faturaEletronica: isFe,
-                iban: ibanVal, moradaFatura: moradaFatVal, mesmaMorada: mesmaMoradaFlag,
-                tipoEntrada: document.getElementById("tipoEntrada").value, obs: document.getElementById("obs").value,
-                dataReg: isEdit ? data.dataReg : nowDateTime(), registradoPor: currentUser?.username
+                id: isEdit ? data.id : Date.now().toString(),
+                nome: nome,
+                nif: document.getElementById("nif").value,
+                nasc: document.getElementById("nasc").value,
+                telefone: document.getElementById("telefone").value,
+                email: document.getElementById("email").value,
+                morada: document.getElementById("morada").value,
+                cpe: document.getElementById("cpe").value,
+                potencia: document.getElementById("potencia").value,
+                cui: document.getElementById("cui").value,
+                escalaGas: document.getElementById("escalaGas").value,
+                faturaEletronica: isFe,
+                iban: ibanVal,
+                moradaFatura: moradaFatVal,
+                mesmaMorada: mesmaMoradaFlag,
+                tipoEntrada: document.getElementById("tipoEntrada").value,
+                obs: document.getElementById("obs").value,
+                dataReg: isEdit ? data.dataReg : nowDateTime(),
+                registradoPor: currentUser?.username
             };
-            if(!isEdit) delete clienteObj.id;
-            await saveClientToFirebase(clienteObj);
-            if(!isEdit) {
+            
+            if (isEdit) {
+                const index = clientsArray.findIndex(c => c.id === editId);
+                if (index !== -1) clientsArray[index] = clienteObj;
+            } else {
+                clientsArray.push(clienteObj);
+            }
+            
+            saveLocalData();
+            
+            if (!isEdit) {
                 const successDiv = document.getElementById("formSuccessMsg");
-                if(successDiv) { successDiv.style.display = "block"; successDiv.innerText = "✅ Cliente guardado! Formulário limpo para novo registo."; setTimeout(()=> successDiv.style.display="none", 2000); }
-                // limpar todos os campos
+                successDiv.style.display = "block";
+                successDiv.innerHTML = "✅ Cliente guardado com sucesso! Formulário limpo para novo registo.";
+                setTimeout(() => successDiv.style.display = "none", 2500);
+                
+                // Limpar formulário
                 document.getElementById("nome").value = "";
                 document.getElementById("nif").value = "";
                 document.getElementById("nasc").value = "";
@@ -484,108 +479,243 @@
                 renderListaClientes();
             }
         };
+        
         document.getElementById("cancelFormBtn").onclick = () => renderListaClientes();
     }
 
-    // lista de clientes com busca e lembretes
+    // ==================== LISTA DE CLIENTES ====================
     function renderListaClientes(searchTerm = "") {
         let filtered = clientsArray;
-        if (searchTerm) {
+        if (searchTerm && searchTerm.trim() !== "") {
             const term = searchTerm.toLowerCase();
-            filtered = clientsArray.filter(c => c.nome?.toLowerCase().includes(term) || c.nif?.includes(term) || c.nasc?.includes(term));
+            filtered = clientsArray.filter(c => 
+                (c.nome && c.nome.toLowerCase().includes(term)) || 
+                (c.nif && c.nif.includes(term)) || 
+                (c.nasc && c.nasc.includes(term))
+            );
         }
-        let html = `<div class="glass-card"><div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px"><h2 style="color:white">📇 Clientes</h2><div><input id="searchGlobal" placeholder="🔍 Nome / NIF / Data" style="width:220px"><button class="btn-sm" id="searchBtnGlass">Buscar</button><button class="btn" id="newClientBtnGlass" style="margin-left:8px">+ Novo</button></div></div>
-        <div style="overflow-x:auto; margin-top:20px"><table><thead><tr><th>Nome</th><th>NIF</th><th>Telefone</th><th>Potência</th><th>Gás Esc</th><th>Data Registo</th><th>Lembrete (+3m)</th><th>Ações</th></tr></thead><tbody>`;
+        
+        let html = `<div class="glass-card">
+            <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:20px">
+                <h2 style="color:white">📇 Clientes Registados</h2>
+                <div style="display:flex; gap:8px">
+                    <input id="searchGlobal" placeholder="🔍 Buscar por Nome / NIF / Data" style="width:260px">
+                    <button class="btn-sm" id="searchBtnGlass">Buscar</button>
+                    <button class="btn" id="newClientBtnGlass">+ Novo Cliente</button>
+                </div>
+            </div>
+            <div style="overflow-x:auto">
+                <table>
+                    <thead>
+                        <tr><th>Nome</th><th>NIF</th><th>Telefone</th><th>Potência</th><th>Gás</th><th>Data Registo</th><th>Lembrete (3+ meses)</th><th>Ações</th></tr>
+                    </thead>
+                    <tbody>`;
+        
         for (const c of filtered) {
-            const lembrete = (() => {
-                if(!c.dataReg) return null;
-                const diff = (new Date() - new Date(c.dataReg)) / (1000*3600*24*30);
-                if(diff >= 3) return `🔔 Ligar para troca de comercializadora (${Math.floor(diff)} meses)`;
-                return null;
-            })();
-            html += `<tr><td>${escapeHtml(c.nome)}</td><td>${c.nif||'-'}</td><td>${c.telefone||'-'}</td><td>${c.potencia} kVA</td><td>${c.escalaGas}</td><td>${c.dataReg||'-'}</td><td>${lembrete ? `<span style="color:#ffaa66">${lembrete}</span>` : "✅ recente"}</td>
-            <td><button class="btn-sm editBtnGlass" data-id="${c.id}">Editar</button> <button class="btn-sm btn-danger delBtnGlass" data-id="${c.id}">Eliminar</button></td></tr>`;
+            let lembreteHtml = "✅ recente";
+            if (c.dataReg) {
+                try {
+                    const partes = c.dataReg.split(',')[0].split('/');
+                    const dataReg = new Date(partes[2], partes[1]-1, partes[0]);
+                    const hoje = new Date();
+                    const diffMeses = (hoje.getFullYear() - dataReg.getFullYear()) * 12 + (hoje.getMonth() - dataReg.getMonth());
+                    if (diffMeses >= 3) {
+                        lembreteHtml = `<span style="color:#ffaa66">🔔 Venda há ${diffMeses} meses. Ligar para troca de comercializadora!</span>`;
+                    }
+                } catch(e) {}
+            }
+            html += `<tr>
+                <td>${escapeHtml(c.nome)}</td>
+                <td>${c.nif || '-'}</td>
+                <td>${c.telefone || '-'}</td>
+                <td>${c.potencia} kVA</td>
+                <td>Esc. ${c.escalaGas}</td>
+                <td>${c.dataReg || '-'}</td>
+                <td>${lembreteHtml}</td>
+                <td><button class="btn-sm editBtnGlass" data-id="${c.id}">Editar</button> <button class="btn-sm btn-danger delBtnGlass" data-id="${c.id}">Eliminar</button></td>
+            </tr>`;
         }
-        html += `</tbody></table>${filtered.length===0?"<p style='color:white'>Nenhum cliente encontrado</p>":""}</div></div>`;
+        html += `</tbody>
+                </table>
+                ${filtered.length === 0 ? "<p style='color:white; text-align:center; padding:20px'>Nenhum cliente encontrado</p>" : ""}
+            </div>
+        </div>`;
+        
         document.getElementById("mainContent").innerHTML = html;
-        document.getElementById("newClientBtnGlass")?.addEventListener("click",()=>renderForm());
-        document.getElementById("searchBtnGlass")?.addEventListener("click",()=>{
+        
+        document.getElementById("newClientBtnGlass")?.addEventListener("click", () => renderForm());
+        document.getElementById("searchBtnGlass")?.addEventListener("click", () => {
             const val = document.getElementById("searchGlobal").value;
             renderListaClientes(val);
         });
-        document.querySelectorAll(".editBtnGlass").forEach(btn => btn.addEventListener("click", (e) => renderForm(btn.getAttribute("data-id"))));
-        document.querySelectorAll(".delBtnGlass").forEach(btn => btn.addEventListener("click", async (e) => {
-            if(confirm("Eliminar cliente?")) await deleteClientFirebase(btn.getAttribute("data-id"));
-            renderListaClientes();
-        }));
+        document.querySelectorAll(".editBtnGlass").forEach(btn => {
+            btn.addEventListener("click", () => renderForm(btn.getAttribute("data-id")));
+        });
+        document.querySelectorAll(".delBtnGlass").forEach(btn => {
+            btn.addEventListener("click", () => {
+                if (confirm("Eliminar cliente permanentemente?")) {
+                    const id = btn.getAttribute("data-id");
+                    clientsArray = clientsArray.filter(c => c.id !== id);
+                    saveLocalData();
+                    renderListaClientes();
+                }
+            });
+        });
     }
 
-    // Admin panel
-    async function renderAdminPanel() {
-        if(currentUser?.role !== "admin") { renderListaClientes(); return; }
-        let html = `<div class="glass-card"><h2 style="color:white">👑 Painel Administrador</h2>
-        <h3 style="color:#eee">👥 Colaboradores</h3><table><thead><tr><th>Usuário</th><th>Nome</th><th>Role</th><th>Ações</th></tr></thead><tbody>`;
+    // ==================== PAINEL ADMIN ====================
+    function renderAdminPanel() {
+        if (currentUser?.role !== "admin") {
+            renderListaClientes();
+            return;
+        }
+        
+        let html = `<div class="glass-card">
+            <h2 style="color:white">👑 Painel Administrador</h2>
+            
+            <h3 style="color:rgba(255,255,255,0.9); margin:20px 0 10px 0">👥 Colaboradores Cadastrados</h3>
+            <table>
+                <thead><tr><th>Usuário</th><th>Nome</th><th>Perfil</th><th>Ações</th></tr></thead>
+                <tbody>`;
         for (const u of usersArray) {
-            html += `<tr><td>${escapeHtml(u.username)}</td><td>${escapeHtml(u.nomeColab)}</td><td>${u.role}</td><td><button class="btn-sm btn-danger delUserBtn" data-id="${u.id}" data-user="${u.username}">Remover</button></td></tr>`;
+            html += `<tr>
+                <td>${escapeHtml(u.username)}</td>
+                <td>${escapeHtml(u.nomeColab)}</td>
+                <td>${u.role}</td>
+                <td><button class="btn-sm btn-danger delUserBtn" data-id="${u.id}" data-user="${u.username}">Remover</button></td>
+            </tr>`;
         }
-        html += `</tbody></table><hr><div style="margin:20px 0"><h3 style="color:white">➕ Novo colaborador</h3><div style="display:flex; gap:10px; flex-wrap:wrap"><input id="newUsername" placeholder="username"><input id="newPassword" type="password" placeholder="senha"><input id="newNomeColab" placeholder="Nome"><select id="newRoleSelect"><option>vendedor</option><option>admin</option></select><button class="btn" id="createUserBtn">Criar</button></div></div>
-        <hr><h3 style="color:white">📄 Todos os registos de clientes (comercializadora)</h3><table><thead><tr><th>Cliente</th><th>Registado por</th><th>Data/Hora</th><th>FE/IBAN</th><th>Tipo entrada</th></tr></thead><tbody>`;
+        html += `</tbody></table>
+        
+        <hr style="margin:20px 0; border-color:rgba(255,255,255,0.2)">
+        <h3 style="color:white">➕ Adicionar Novo Colaborador</h3>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin:15px 0">
+            <input id="newUsername" placeholder="Usuário" style="flex:1">
+            <input id="newPassword" type="password" placeholder="Senha" style="flex:1">
+            <input id="newNomeColab" placeholder="Nome completo" style="flex:1">
+            <select id="newRoleSelect">
+                <option>vendedor</option>
+                <option>admin</option>
+            </select>
+            <button class="btn" id="createUserBtn">Criar</button>
+        </div>
+        
+        <hr style="margin:20px 0; border-color:rgba(255,255,255,0.2)">
+        <h3 style="color:white">📊 Todos os Registos de Clientes</h3>
+        <div style="overflow-x:auto">
+            <table>
+                <thead><tr><th>Cliente</th><th>Registado por</th><th>Data/Hora</th><th>Tipo Faturação</th><th>Tipo Entrada</th></tr></thead>
+                <tbody>`;
         for (const c of clientsArray) {
-            html += `<tr><td>${escapeHtml(c.nome)}</td><td>${c.registradoPor || "?"}</td><td>${c.dataReg}</td><td>${c.faturaEletronica ? "FE ✓ IBAN:"+(c.iban||'---') : "Fatura papel"}</td><td>${c.tipoEntrada}</td></tr>`;
+            html += `<tr>
+                <td>${escapeHtml(c.nome)}</td>
+                <td>${c.registradoPor || "?"}</td>
+                <td>${c.dataReg || '-'}</td>
+                <td>${c.faturaEletronica ? "FE ✓ IBAN:" + (c.iban || '---') : "Fatura papel"}</td>
+                <td>${c.tipoEntrada || '-'}</td>
+            </tr>`;
         }
-        html += `</tbody></table><button class="btn-secondary" id="backFromAdmin">← Voltar clientes</button></div>`;
+        html += `</tbody>
+            </table>
+        </div>
+        <button class="btn-secondary" id="backFromAdmin" style="margin-top:20px">← Voltar para Clientes</button>
+        </div>`;
+        
         document.getElementById("mainContent").innerHTML = html;
-        document.getElementById("createUserBtn")?.addEventListener("click", async () => {
-            const uname = document.getElementById("newUsername").value, pwd = document.getElementById("newPassword").value, nomeC = document.getElementById("newNomeColab").value, role = document.getElementById("newRoleSelect").value;
-            if(!uname || !pwd || !nomeC) { alert("preencha tudo"); return; }
-            if(usersArray.find(u=>u.username === uname)) { alert("username já existe"); return; }
-            await saveUserToFirebase({ username: uname, password: pwd, role, nomeColab: nomeC });
-            await loadFirebaseData();
+        
+        document.getElementById("createUserBtn")?.addEventListener("click", () => {
+            const uname = document.getElementById("newUsername").value;
+            const pwd = document.getElementById("newPassword").value;
+            const nomeC = document.getElementById("newNomeColab").value;
+            const role = document.getElementById("newRoleSelect").value;
+            if (!uname || !pwd || !nomeC) { alert("Preencha todos os campos"); return; }
+            if (usersArray.find(u => u.username === uname)) { alert("Username já existe"); return; }
+            const newUser = {
+                id: Date.now().toString(),
+                username: uname,
+                password: pwd,
+                role: role,
+                nomeColab: nomeC
+            };
+            usersArray.push(newUser);
+            saveLocalData();
             renderAdminPanel();
         });
-        document.querySelectorAll(".delUserBtn").forEach(btn => btn.addEventListener("click", async (e) => {
-            const userId = btn.getAttribute("data-id"), usernameDel = btn.getAttribute("data-user");
-            if(usernameDel === currentUser.username) { alert("Não pode excluir a si mesmo"); return; }
-            await deleteUserFirebase(userId);
-            await loadFirebaseData();
-            renderAdminPanel();
-        }));
-        document.getElementById("backFromAdmin")?.addEventListener("click",()=>renderListaClientes());
+        
+        document.querySelectorAll(".delUserBtn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const userId = btn.getAttribute("data-id");
+                const usernameDel = btn.getAttribute("data-user");
+                if (usernameDel === currentUser.username) { alert("Não pode remover a si mesmo"); return; }
+                usersArray = usersArray.filter(u => u.id !== userId);
+                saveLocalData();
+                renderAdminPanel();
+            });
+        });
+        
+        document.getElementById("backFromAdmin")?.addEventListener("click", () => renderListaClientes());
     }
 
+    // ==================== MENU ====================
     function renderMenu() {
         const menuDiv = document.getElementById("menuContainer");
-        menuDiv.innerHTML = `<div class="menu-glass"><span style="font-weight:700; color:white">⚡ EnergyGlass · Portugal</span>
-        <button id="menuClientes" class="btn-sm">🏠 Clientes</button>${currentUser?.role === "admin" ? `<button id="menuAdmin" class="btn-sm">👑 Admin</button>` : ""}
-        <span style="flex:1"></span><span style="color:white">👤 ${currentUser?.username} (${currentUser?.role})</span><button id="logoutBtnMain" class="btn-sm btn-danger">Sair</button></div>`;
+        menuDiv.innerHTML = `<div class="menu-glass">
+            <span style="font-weight:700; color:white">⚡ EnergyGlass · Portugal</span>
+            <button id="menuClientes" class="btn-sm">🏠 Clientes</button>
+            ${currentUser?.role === "admin" ? `<button id="menuAdmin" class="btn-sm">👑 Admin</button>` : ""}
+            <span style="flex:1"></span>
+            <span style="color:white">👤 ${currentUser?.username} (${currentUser?.role})</span>
+            <button id="logoutBtnMain" class="btn-sm btn-danger">Sair</button>
+        </div>`;
+        
         document.getElementById("menuClientes").onclick = () => renderListaClientes();
-        if(currentUser?.role === "admin") document.getElementById("menuAdmin").onclick = () => renderAdminPanel();
-        document.getElementById("logoutBtnMain").onclick = () => { currentUser = null; showLoginScreen(); };
-    }
-
-    async function showLoginScreen() {
-        await loadFirebaseData();
-        const root = document.getElementById("appRoot");
-        root.innerHTML = `<div class="login-overlay"><div class="glass-card login-card"><h2 style="color:white">🔐 EnergyGlass</h2><input id="loginUser" placeholder="Usuário" value="admin"><input id="loginPass" type="password" placeholder="Senha" value="admin123"><button class="btn" id="loginBtn">Entrar</button><div id="loginErrorMsg" style="color:#ffaa88; margin-top:12px"></div><hr><small style="color:white">🔑 admin/admin123  |  vendedor/vender123</small></div></div>`;
-        document.getElementById("loginBtn").onclick = () => {
-            const u = document.getElementById("loginUser").value, p = document.getElementById("loginPass").value;
-            const userFound = usersArray.find(us => us.username === u && us.password === p);
-            if(userFound) {
-                currentUser = userFound;
-                initMainApp();
-            } else document.getElementById("loginErrorMsg").innerText = "Credenciais inválidas";
+        if (currentUser?.role === "admin") {
+            document.getElementById("menuAdmin").onclick = () => renderAdminPanel();
+        }
+        document.getElementById("logoutBtnMain").onclick = () => {
+            currentUser = null;
+            showLoginScreen();
         };
     }
 
-    async function initMainApp() {
-        await loadFirebaseData();
+    // ==================== TELA DE LOGIN ====================
+    function showLoginScreen() {
+        loadLocalData();
+        const root = document.getElementById("appRoot");
+        root.innerHTML = `<div class="login-overlay">
+            <div class="glass-card login-card">
+                <h2 style="color:white; text-align:center">🔐 EnergyGlass</h2>
+                <input id="loginUser" placeholder="Usuário" value="admin" style="margin:10px 0">
+                <input id="loginPass" type="password" placeholder="Senha" value="admin123">
+                <button class="btn" id="loginBtn" style="width:100%; margin-top:10px">Entrar</button>
+                <div id="loginErrorMsg" style="color:#ffaa88; margin-top:12px; text-align:center"></div>
+                <hr style="margin:16px 0; border-color:rgba(255,255,255,0.2)">
+                <small style="color:white; display:block; text-align:center">🔑 admin / admin123 &nbsp;|&nbsp; vendedor / vender123</small>
+            </div>
+        </div>`;
+        
+        document.getElementById("loginBtn").onclick = () => {
+            const u = document.getElementById("loginUser").value;
+            const p = document.getElementById("loginPass").value;
+            const userFound = usersArray.find(us => us.username === u && us.password === p);
+            if (userFound) {
+                currentUser = userFound;
+                initMainApp();
+            } else {
+                document.getElementById("loginErrorMsg").innerText = "Credenciais inválidas! Use admin/admin123";
+            }
+        };
+    }
+
+    // ==================== INICIALIZAÇÃO ====================
+    function initMainApp() {
         const root = document.getElementById("appRoot");
         root.innerHTML = `<div id="menuContainer"></div><div id="mainContent"></div>`;
         renderMenu();
         renderListaClientes();
     }
 
-    function escapeHtml(str) { if(!str) return ""; return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+    // Iniciar aplicação
     showLoginScreen();
 </script>
 </body>
