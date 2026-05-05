@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>EnergiaPro - Gestão de Clientes | Luz & Gás PT</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+        }
+        body {
+            background: #eef2f7;
+            margin: 0;
+            padding: 20px;
+        }
+        .app-container {
+            max-width: 1500px;
+            margin: 0 auto;
+        }
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .login-card {
+            background: white;
+            width: 360px;
+            border-radius: 32px;
+            padding: 28px 24px;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        .login-card input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 40px;
+        }
+        .btn {
+            background: #0057a3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .btn-danger {
+            background: #b22234;
+        }
+        .btn-secondary {
+            background: #6c757d;
+        }
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 28px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+        }
+        .form-row {
+            margin-bottom: 16px;
+        }
+        label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 6px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 20px;
+            border: 1px solid #ccc;
+        }
+        .map-placeholder {
+            height: 180px;
+            background: #e9ecef;
+            border-radius: 20px;
+            margin-top: 8px;
+        }
+        .lembrete-alerta {
+            border-left: 5px solid #f4c542;
+            background: #fff9e8;
+            padding: 8px 12px;
+            border-radius: 20px;
+            margin-top: 6px;
+            font-size: 0.8rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+        th, td {
+            border-bottom: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .menu-bar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            background: white;
+            padding: 12px 20px;
+            border-radius: 60px;
+            align-items: center;
+        }
+        .search-box {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .status-bar {
+            font-size: 0.7rem;
+            color: #2e7d32;
+            background: #e8f5e9;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="app-container" id="appRoot"></div>
+
+<script>
+    // ======================== DADOS GLOBAIS ========================
+    let currentUser = null;
+    let clients = [];
+    let registeredUsers = [];
+    let dbMode = "local"; // "local" ou "firebase"
+    
+    // Carregar do localStorage
+    function loadFromLocalStorage() {
+        const storedClients = localStorage.getItem("energy_clients");
+        if(storedClients) clients = JSON.parse(storedClients);
+        else clients = [];
+        
+        const storedUsers = localStorage.getItem("energy_users");
+        if(storedUsers) registeredUsers = JSON.parse(storedUsers);
+        
+        // Usuários padrão se não existir nenhum
+        if(registeredUsers.length === 0) {
+            registeredUsers = [
+                { username: "admin", password: "admin123", role: "admin", nomeColab: "Administrador" },
+                { username: "vendedor", password: "vender123", role: "vendedor", nomeColab: "João Vendas" }
+            ];
+            saveToLocalStorage();
+        }
+    }
+    
+    function saveToLocalStorage() {
+        localStorage.setItem("energy_clients", JSON.stringify(clients));
+        localStorage.setItem("energy_users", JSON.stringify(registeredUsers));
+    }
+    
+    // Funções de persistência (usando localStorage - sempre funciona)
+    function saveData() {
+        saveToLocalStorage();
+    }
+    
+    function loadData() {
+        loadFromLocalStorage();
+    }
+    
+    // Helper: timestamp
+    function nowDateTime() {
+        return new Date().toLocaleString("pt-PT", { hour12: false });
+    }
+    
+    // Verificar vendas antigas
+    function getLembreteVendaAntiga(cliente) {
+        if(!cliente.dataRegistro) return null;
+        const dataReg = new Date(cliente.dataRegistro);
+        const hoje = new Date();
+        const diffMeses = (hoje.getFullYear() - dataReg.getFullYear()) * 12 + (hoje.getMonth() - dataReg.getMonth());
+        if(diffMeses >= 3) {
+            return `⚠️ Venda registada há ${diffMeses} meses. Lembre-se de contactar o cliente para renovação / troca de comercializadora!`;
+        }
+        return null;
+    }
+    
+    // Script de vendas dica
+    function getScriptSugestao() {
+        const dicas = [
+            "💡 Dica: 'Boa tarde cliente, verificamos que o mercado de energia baixou, podemos poupar até 15% na fatura!'",
+            "📞 Script: 'A sua fidelização terminou? Temos oferta exclusiva de manutenção de preço gás por 12 meses.'",
+            "⚡ Dica: pergunte sobre o CPE e verifique se a potencia contratada é a ideal para os hábitos.",
+            "🔥 Gás: Caso esteja no escalão 3 ou 4, sugira plano bi-horário para eletricidade com desconto."
+        ];
+        return dicas[Math.floor(Math.random() * dicas.length)];
+    }
+    
+    // Mapa rápido
+    let currentMap = null;
+    function initMap(elementId, addressValue) {
+        if(currentMap && currentMap.remove) currentMap.remove();
+        const mapDiv = document.getElementById(elementId);
+        if(!mapDiv) return;
+        const map = L.map(elementId).setView([39.3999, -8.2245], 7);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
+        }).addTo(map);
+        if(addressValue && addressValue.trim() !== "") {
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addressValue + ", Portugal")}&limit=1`)
+                .then(res => res.json())
+                .then(data => {
+                    if(data && data.length) {
+                        const lat = parseFloat(data[0].lat);
+                        const lon = parseFloat(data[0].lon);
+                        map.setView([lat, lon], 13);
+                        L.marker([lat, lon]).addTo(map).bindPopup("Morada: " + addressValue).openPopup();
+                    }
+                }).catch(e=>console.warn("map erro"));
+        }
+        currentMap = map;
+    }
+    
+    function escapeHtml(str){ if(!str) return ""; return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;});}
+    
+    // ========== FORMULÁRIO DE REGISTRO ==========
+    function renderForm(editingClientId = null) {
+        const existing = editingClientId ? clients.find(c => c.id == editingClientId) : null;
+        const isEdit = !!existing;
+        const clientToUse = existing || {
+            nome: "", nif: "", nascimento: "", telefone: "", email: "", morada: "", cpe: "",
+            potencia: "3.45", cui: "", escalaGas: "1", faturaEletronica: false, iban: "",
+            moradaFatura: "", mesmaMoradaFatura: true, tipoEntrada: "Mudança de comercializadora",
+            observacoes: "", dataRegistro: nowDateTime(), registradoPor: currentUser?.username || "sistema"
+        };
+        
+        const html = `
+            <div class="card">
+                <h2>${isEdit ? "✏️ Editar Cliente" : "📝 Novo Registro"} - ${currentUser?.username}</h2>
+                <div class="grid-2col">
+                    <div>
+                        <div class="form-row"><label>Nome completo:</label><input type="text" id="nome" value="${escapeHtml(clientToUse.nome)}" required></div>
+                        <div class="form-row"><label>NIF:</label><input type="text" id="nif" value="${clientToUse.nif || ''}"></div>
+                        <div class="form-row"><label>Data nascimento:</label><input type="date" id="nascimento" value="${clientToUse.nascimento || ''}"></div>
+                        <div class="form-row"><label>Telefone:</label><input type="tel" id="telefone" value="${clientToUse.telefone || ''}"></div>
+                        <div class="form-row"><label>E-mail:</label><input type="email" id="email" value="${clientToUse.email || ''}"></div>
+                        <div class="form-row"><label>Morada (fornecimento):</label><input type="text" id="morada" value="${escapeHtml(clientToUse.morada || '')}" placeholder="Rua, nº, cidade"></div>
+                        <div id="mapPreview" class="map-placeholder"></div>
+                        <div class="form-row"><label>CPE (Luz):</label><input type="text" id="cpe" value="${clientToUse.cpe || ''}"></div>
+                        <div class="form-row"><label>Potência contratada (kVA):</label><select id="potencia"><option>1.15</option><option>2.3</option><option>3.45</option><option>4.6</option><option>5.75</option><option>6.9</option><option>10.35</option><option>13.8</option><option>20.7</option></select></div>
+                    </div>
+                    <div>
+                        <div class="form-row"><label>CUI (Gás):</label><input type="text" id="cui" value="${clientToUse.cui || ''}"></div>
+                        <div class="form-row"><label>Escalão de gás (1 a 4):</label><select id="escalaGas"><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
+                        <div class="form-row"><label>Faturação Eletrónica (FE)?</label> 
+                            <select id="feSelect"><option value="sim" ${clientToUse.faturaEletronica ? 'selected' : ''}>Sim</option><option value="nao" ${!clientToUse.faturaEletronica ? 'selected' : ''}>Não</option></select>
+                        </div>
+                        <div id="faturaCampos"></div>
+                        <div class="form-row"><label>Tipo de entrada:</label><select id="tipoEntrada"><option>Mudança de comercializadora</option><option>Mudança de Titularidade</option><option>Mudança de comercializadora com alteração de titularidade</option><option>Entrada Direta</option></select></div>
+                        <div class="form-row"><label>Observações:</label><textarea id="obs" rows="2">${escapeHtml(clientToUse.observacoes || '')}</textarea></div>
+                        <div class="form-row"><small>Data/Hora registro: ${clientToUse.dataRegistro}</small></div>
+                    </div>
+                </div>
+                <div style="margin-top:15px; text-align:right">
+                    <button class="btn btn-secondary" id="cancelEditBtn">Cancelar</button>
+                    <button class="btn" id="saveClientBtn">${isEdit ? "Atualizar" : "Guardar Cliente"}</button>
+                </div>
+                <div class="lembrete-alerta">💬 Dica script: ${getScriptSugestao()}</div>
+            </div>
+        `;
+        document.getElementById("mainContent").innerHTML = html;
+        
+        const potSelect = document.getElementById("potencia");
+        if(potSelect) potSelect.value = clientToUse.potencia;
+        const escalaSelect = document.getElementById("escalaGas");
+        if(escalaSelect) escalaSelect.value = clientToUse.escalaGas;
+        const tipoEntrada = document.getElementById("tipoEntrada");
+        if(tipoEntrada) tipoEntrada.value = clientToUse.tipoEntrada;
+        
+        function atualizarFaturaCampos() {
+            const fe = document.getElementById("feSelect").value === "sim";
+            const container = document.getElementById("faturaCampos");
+            if(fe) {
+                container.innerHTML = `<div class="form-row"><label>IBAN:</label><input type="text" id="iban" placeholder="PT50 0000 ..." maxlength="25"><span id="ibanCounter">0/25</span></div>`;
+                const ibanInput = document.getElementById("iban");
+                if(clientToUse.iban) ibanInput.value = clientToUse.iban;
+                const counter = document.getElementById("ibanCounter");
+                if(ibanInput) ibanInput.addEventListener("input", (e) => { if(counter) counter.innerText = e.target.value.length+"/25"; });
+                if(counter && ibanInput) counter.innerText = ibanInput.value.length+"/25";
+            } else {
+                container.innerHTML = `<div class="form-row"><label>Morada para fatura em papel:</label><input type="text" id="moradaPapel" placeholder="Morada para envio"><button id="copyMoradaBtn" type="button" class="btn-sm">📋 Colar mesma morada</button><div><small>Diferente da morada fornecimento?</small><input type="checkbox" id="difMoradaCheck"> Usar morada diferente</div></div>`;
+                const moradaPapel = document.getElementById("moradaPapel");
+                if(moradaPapel && clientToUse.moradaFatura) moradaPapel.value = clientToUse.moradaFatura;
+                document.getElementById("copyMoradaBtn")?.addEventListener("click",()=>{
+                    const moradaMain = document.getElementById("morada").value;
+                    if(moradaPapel) moradaPapel.value = moradaMain;
+                });
+                const difCheck = document.getElementById("difMoradaCheck");
+                if(difCheck && clientToUse.mesmaMoradaFatura !== undefined) difCheck.checked = (clientToUse.mesmaMoradaFatura === false);
+            }
+        }
+        document.getElementById("feSelect").addEventListener("change", atualizarFaturaCampos);
+        atualizarFaturaCampos();
+        
+        const moradaInput = document.getElementById("morada");
+        const updateMap = () => initMap("mapPreview", moradaInput.value);
+        moradaInput.addEventListener("input", updateMap);
+        updateMap();
+        
+        document.getElementById("saveClientBtn").onclick = () => {
+            const nome = document.getElementById("nome").value;
+            if(!nome) { alert("Nome obrigatório"); return; }
+            const faturaEletronica = document.getElementById("feSelect").value === "sim";
+            let iban = "";
+            let moradaFatura = "";
+            let mesmaMoradaFatura = true;
+            
+            if(faturaEletronica) {
+                iban = document.getElementById("iban")?.value || "";
+            } else {
+                const moradaPapel = document.getElementById("moradaPapel")?.value || "";
+                const difCheck = document.getElementById("difMoradaCheck")?.checked;
+                mesmaMoradaFatura = !difCheck;
+                moradaFatura = difCheck ? moradaPapel : (document.getElementById("morada").value);
+            }
+            
+            const novoCliente = {
+                id: isEdit ? clientToUse.id : Date.now().toString(),
+                nome: nome,
+                nif: document.getElementById("nif").value,
+                nascimento: document.getElementById("nascimento").value,
+                telefone: document.getElementById("telefone").value,
+                email: document.getElementById("email").value,
+                morada: document.getElementById("morada").value,
+                cpe: document.getElementById("cpe").value,
+                potencia: document.getElementById("potencia").value,
+                cui: document.getElementById("cui").value,
+                escalaGas: document.getElementById("escalaGas").value,
+                faturaEletronica: faturaEletronica,
+                iban: iban,
+                moradaFatura: moradaFatura,
+                mesmaMoradaFatura: mesmaMoradaFatura,
+                tipoEntrada: document.getElementById("tipoEntrada").value,
+                observacoes: document.getElementById("obs").value,
+                dataRegistro: isEdit ? clientToUse.dataRegistro : nowDateTime(),
+                registradoPor: currentUser?.username
+            };
+            
+            if(isEdit) {
+                const index = clients.findIndex(c=>c.id == editingClientId);
+                if(index !== -1) clients[index] = novoCliente;
+            } else {
+                clients.push(novoCliente);
+            }
+            saveData();
+            renderListaClientes();
+        };
+        document.getElementById("cancelEditBtn")?.addEventListener("click",()=>renderListaClientes());
+    }
+    
+    // Listagem com busca
+    function renderListaClientes(buscaTexto="") {
+        let filtered = clients;
+        if(buscaTexto.trim()!=="") {
+            const term = buscaTexto.toLowerCase();
+            filtered = clients.filter(c => (c.nome && c.nome.toLowerCase().includes(term)) || 
+                                          (c.nif && c.nif.includes(term)) || 
+                                          (c.nascimento && c.nascimento.includes(term)));
+        }
+        let html = `<div class="card"><h2>📋 Clientes registados</h2>
+        <div class="search-box"><input type="text" id="globalSearch" placeholder="Buscar por Nome, NIF ou Data" style="flex:1"><button class="btn" id="searchBtn">🔍 Buscar</button><button class="btn-secondary" id="addClientBtn">+ Novo Cliente</button></div>
+        <div style="overflow-x:auto"><table><thead><tr><th>Nome</th><th>NIF</th><th>Telefone</th><th>Potência</th><th>Gás</th><th>Data Reg</th><th>Lembrete (3+ meses)</th><th>Ações</th></tr></thead><tbody>`;
+        filtered.forEach(c => {
+            const lembrete = getLembreteVendaAntiga(c);
+            html += `<tr>
+                <td>${escapeHtml(c.nome || '')}</td>
+                <td>${c.nif || '-'}</td>
+                <td>${c.telefone || '-'}</td>
+                <td>${c.potencia || '-'} kVA</td>
+                <td>Esc. ${c.escalaGas || '-'}</td>
+                <td>${c.dataRegistro || '-'}</td>
+                <td>${lembrete ? `<span style="color:#e67e22;">🔔 ${lembrete}</span>` : "✅ recente"}</td>
+                <td><button class="btn-sm editClient" data-id="${c.id}">Editar</button> <button class="btn-sm btn-danger deleteClient" data-id="${c.id}">Eliminar</button></td>
+            </tr>`;
+        });
+        html += `</tbody></table></div>${filtered.length===0?"<p>Nenhum cliente encontrado.</p>":""}</div>`;
+        document.getElementById("mainContent").innerHTML = html;
+        
+        document.getElementById("addClientBtn")?.addEventListener("click",()=>renderForm());
+        document.querySelectorAll(".editClient").forEach(btn=>{
+            btn.addEventListener("click",()=>{
+                const id = btn.getAttribute("data-id");
+                renderForm(id);
+            });
+        });
+        document.querySelectorAll(".deleteClient").forEach(btn=>{
+            btn.addEventListener("click",()=>{
+                if(confirm("Remover cliente permanentemente?")){
+                    const id = btn.getAttribute("data-id");
+                    clients = clients.filter(c=>c.id !== id);
+                    saveData();
+                    renderListaClientes();
+                }
+            });
+        });
+        document.getElementById("searchBtn")?.addEventListener("click",()=>{
+            const val = document.getElementById("globalSearch").value;
+            renderListaClientes(val);
+        });
+    }
+    
+    // Painel ADMIN
+    function renderAdminPanel() {
+        if(currentUser?.role !== "admin") {
+            renderListaClientes();
+            return;
+        }
+        
+        let html = `<div class="card"><h2>🔐 Painel Administrador</h2>
+        <h3>👥 Colaboradores cadastrados</h3>
+        <table><thead><tr><th>Username</th><th>Nome</th><th>Role</th><th>Ações</th></tr></thead><tbody>`;
+        for (const u of registeredUsers) {
+            html += `<tr>
+                <td>${escapeHtml(u.username)}</td>
+                <td>${escapeHtml(u.nomeColab)}</td>
+                <td>${u.role}</td>
+                <td><button class="btn-sm btn-danger removeUserBtn" data-user="${u.username}">Remover</button></td>
+            </tr>`;
+        }
+        html += `</tbody></table><hr><h3>➕ Adicionar colaborador</h3><div><input id="newUser" placeholder="username"><input id="newPass" type="password" placeholder="senha"><input id="newNome" placeholder="Nome colaborador"><select id="newRole"><option>vendedor</option><option>admin</option></select><button id="addUserBtn">Criar</button></div>
+        <hr><h3>📊 Todos os registos de clientes</h3><table><thead><tr><th>Nome</th><th>Registrado por</th><th>Data/Hora</th><th>FE/IBAN</th><th>Tipo Entrada</th></tr></thead><tbody>`;
+        for (const c of clients) {
+            html += `<tr>
+                <td>${escapeHtml(c.nome || '')}</td>
+                <td>${c.registradoPor || "?"}</td>
+                <td>${c.dataRegistro || '-'}</td>
+                <td>${c.faturaEletronica ? "FE IBAN:"+ (c.iban||'--') : "Fatura papel"}</td>
+                <td>${c.tipoEntrada || '-'}</td>
+            </tr>`;
+        }
+        html += `</tbody></table><button id="voltarAdminBtn" class="btn-secondary">Voltar para clientes</button></div>`;
+        document.getElementById("mainContent").innerHTML = html;
+        
+        document.getElementById("addUserBtn")?.addEventListener("click", () => {
+            const uname = document.getElementById("newUser").value;
+            const pwd = document.getElementById("newPass").value;
+            const nomeC = document.getElementById("newNome").value;
+            const role = document.getElementById("newRole").value;
+            if(!uname || !pwd || !nomeC) { alert("Preencha todos os campos"); return; }
+            if(registeredUsers.find(u=>u.username===uname)){ alert("Username já existe"); return; }
+            registeredUsers.push({ username: uname, password: pwd, role: role, nomeColab: nomeC });
+            saveData();
+            renderAdminPanel();
+        });
+        
+        document.querySelectorAll(".removeUserBtn").forEach(btn=>{
+            btn.addEventListener("click", () => {
+                const username = btn.getAttribute("data-user");
+                if(username === currentUser.username) { alert("Não pode remover a si mesmo."); return; }
+                if(confirm(`Remover colaborador ${username}?`)) {
+                    registeredUsers = registeredUsers.filter(u=>u.username !== username);
+                    saveData();
+                    renderAdminPanel();
+                }
+            });
+        });
+        
+        document.getElementById("voltarAdminBtn")?.addEventListener("click",()=>renderListaClientes());
+    }
+    
+    function renderMenu() {
+        const menuDiv = document.getElementById("menuContainer");
+        menuDiv.innerHTML = `<div class="menu-bar">
+            <strong>⚡ EnergyPortugal</strong>
+            <span class="status-bar">💾 Dados salvos localmente</span>
+            <button id="menuClientesBtn">🏠 Clientes</button>
+            <button id="menuAdminBtn" ${currentUser?.role === "admin" ? "" : "style='display:none'"}>👑 Admin</button>
+            <span style="flex:1"></span>
+            <span>👤 ${currentUser?.username} (${currentUser?.role})</span>
+            <button id="logoutBtn" class="btn-sm btn-danger">Sair</button>
+        </div>`;
+        document.getElementById("menuClientesBtn").onclick = () => renderListaClientes();
+        if(currentUser?.role === "admin") document.getElementById("menuAdminBtn").onclick = () => renderAdminPanel();
+        document.getElementById("logoutBtn").onclick = () => {
+            currentUser = null;
+            showLoginScreen();
+        };
+    }
+    
+    function showLoginScreen() {
+        const root = document.getElementById("appRoot");
+        root.innerHTML = `<div class="login-overlay" id="loginOverlay"><div class="login-card"><h2>🔐 Acesso Comercializadoras</h2>
+        <input type="text" id="loginUser" placeholder="Usuário" value="admin">
+        <input type="password" id="loginPass" placeholder="Senha" value="admin123">
+        <button class="btn" id="doLoginBtn">Entrar</button>
+        <div id="loginError" style="color:red; margin-top:8px;"></div>
+        <hr><small>Credenciais: admin / admin123 | vendedor / vender123</small>
+        </div></div>`;
+        
+        document.getElementById("doLoginBtn").onclick = () => {
+            const user = document.getElementById("loginUser").value;
+            const pass = document.getElementById("loginPass").value;
+            loadData();
+            const found = registeredUsers.find(u => u.username === user && u.password === pass);
+            if(found) {
+                currentUser = found;
+                initMainApp();
+            } else {
+                document.getElementById("loginError").innerText = "Credenciais inválidas! Use: admin / admin123";
+            }
+        };
+    }
+    
+    function initMainApp() {
+        loadData();
+        const root = document.getElementById("appRoot");
+        root.innerHTML = `<div id="menuContainer"></div><div id="mainContent"></div>`;
+        renderMenu();
+        renderListaClientes();
+    }
+    
+    // Iniciar
+    showLoginScreen();
+</script>
+</body>
+</html>
