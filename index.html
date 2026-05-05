@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#1a2a3a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="EnergyGlass">
+    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22EnergyGlass%22,%22short_name%22:%22EnergyGlass%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%221a2a3a%22,%22theme_color%22:%231a2a3a%22,%22icons%22:[{%22src%22:%22https://via.placeholder.com/192x192?text=EG%22,%22sizes%22:%22192x192%22,%22type%22:%22image/png%22}]}">
     <title>EnergyGlass · Gestão Comercializadoras PT</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -17,7 +22,7 @@
         body {
             min-height: 100vh;
             background: radial-gradient(circle at 20% 30%, #1a2a3a, #0a0f1a);
-            padding: 20px;
+            padding: 16px;
         }
 
         .glass-card {
@@ -31,7 +36,7 @@
         }
 
         .app-container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
         }
 
@@ -39,19 +44,19 @@
             background: rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(24px);
             border-radius: 60px;
-            padding: 12px 24px;
+            padding: 12px 20px;
             display: flex;
             flex-wrap: wrap;
             align-items: center;
-            gap: 16px;
-            margin-bottom: 28px;
+            gap: 12px;
+            margin-bottom: 24px;
             border: 1px solid rgba(255, 255, 255, 0.35);
         }
 
         .btn {
             background: rgba(0, 87, 163, 0.9);
             border: none;
-            padding: 10px 22px;
+            padding: 10px 20px;
             border-radius: 40px;
             font-weight: 600;
             color: white;
@@ -101,9 +106,9 @@
             margin-bottom: 20px;
         }
 
-        .grid-2 {
+        .grid-responsive {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 24px;
         }
 
@@ -135,7 +140,8 @@
             border-collapse: collapse;
             background: rgba(0,0,0,0.2);
             border-radius: 28px;
-            overflow: hidden;
+            overflow-x: auto;
+            display: block;
         }
 
         th, td {
@@ -147,6 +153,11 @@
 
         th {
             background: rgba(0,0,0,0.3);
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 28px;
         }
 
         .login-overlay {
@@ -165,6 +176,7 @@
 
         .login-card {
             width: 380px;
+            max-width: 90%;
         }
 
         .success-msg {
@@ -187,9 +199,17 @@
 
         button:hover { opacity: 0.9; transform: scale(0.98); }
         
-        @media (max-width: 800px) {
-            .grid-2 { grid-template-columns: 1fr; }
+        @media (max-width: 768px) {
             body { padding: 12px; }
+            .glass-card { padding: 18px; border-radius: 32px; }
+            .menu-glass { padding: 10px 16px; gap: 8px; }
+            .btn { padding: 8px 16px; font-size: 0.8rem; }
+            .section-title { font-size: 1.1rem; }
+        }
+
+        @media (max-width: 480px) {
+            .grid-responsive { gap: 16px; }
+            input, select, textarea { padding: 10px 14px; font-size: 0.85rem; }
         }
     </style>
 </head>
@@ -197,19 +217,21 @@
 <div id="appRoot" class="app-container"></div>
 
 <script>
-    // ==================== DADOS GLOBAIS (localStorage - 100% funcional) ====================
+    // ==================== LISTA DE COMERCIALIZADORAS (ordem alfabética) ====================
+    const comercializadoras = [
+        "Alfa Energia", "Cooperativa Elétrica", "EDP Comercial", "Endesa", "Energia Simples",
+        "Energy24", "Galp Energia", "Goldenergy", "Iberdrola", "Logica Energy", "Luzboa",
+        "MEO Energia", "Plenitude", "Repsol Electricidade", "SU Eletricidade", "Universal Energy"
+    ].sort();
+
+    // ==================== DADOS GLOBAIS (localStorage) ====================
     let currentUser = null;
     let clientsArray = [];
     let usersArray = [];
 
-    // Carregar dados do localStorage
     function loadLocalData() {
         const storedClients = localStorage.getItem("energy_clients");
-        if (storedClients) {
-            clientsArray = JSON.parse(storedClients);
-        } else {
-            clientsArray = [];
-        }
+        clientsArray = storedClients ? JSON.parse(storedClients) : [];
         
         const storedUsers = localStorage.getItem("energy_users");
         if (storedUsers) {
@@ -228,7 +250,6 @@
         localStorage.setItem("energy_users", JSON.stringify(usersArray));
     }
 
-    // Helpers
     function nowDateTime() {
         return new Date().toLocaleString("pt-PT");
     }
@@ -243,7 +264,6 @@
         });
     }
 
-    // Dica de vendas
     function getScriptHint() {
         const tips = [
             "✨ Dica: Ofereça análise gratuita de consumo para fidelizar o cliente",
@@ -255,7 +275,7 @@
         return tips[Math.floor(Math.random() * tips.length)];
     }
 
-    // Mapa com Leaflet
+    // Mapa
     let currentMap = null;
     function initMapPreview(containerId, address) {
         const container = document.getElementById(containerId);
@@ -263,7 +283,7 @@
         if (currentMap) currentMap.remove();
         const map = L.map(containerId).setView([39.3999, -8.2245], 7);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            attribution: '&copy; OpenStreetMap'
         }).addTo(map);
         if (address && address.trim() !== "") {
             fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address + ", Portugal")}&limit=1`)
@@ -280,25 +300,31 @@
         currentMap = map;
     }
 
-    // ==================== FORMULÁRIO DE REGISTRO ====================
+    // ==================== FORMULÁRIO ====================
     function renderForm(editId = null) {
         const existing = editId ? clientsArray.find(c => c.id === editId) : null;
         const isEdit = !!existing;
         const data = existing || {
             nome: "", nif: "", nasc: "", telefone: "", email: "", morada: "", cpe: "",
-            potencia: "3.45", cui: "", escalaGas: "1", faturaEletronica: false, iban: "",
-            moradaFatura: "", mesmaMorada: true, tipoEntrada: "Mudança de comercializadora", obs: "",
+            potencia: "3.45", cui: "", escalaGas: "1", 
+            comercializadoraAtual: comercializadoras[0], comercializadoraNova: comercializadoras[0],
+            faturaEletronica: false, iban: "", moradaFatura: "", mesmaMorada: true, 
+            tipoEntrada: "Mudança de comercializadora", obs: "",
             dataReg: nowDateTime(), registradoPor: currentUser?.username
         };
 
+        // Gerar options das comercializadoras
+        const comOptions = comercializadoras.map(c => `<option ${data.comercializadoraAtual === c ? 'selected' : ''}>${c}</option>`).join('');
+        const comOptionsNova = comercializadoras.map(c => `<option ${data.comercializadoraNova === c ? 'selected' : ''}>${c}</option>`).join('');
+
         const html = `
         <div class="glass-card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:20px">
                 <h2 style="color:white">${isEdit ? "✏️ Editar Cliente" : "✨ Novo Registo"}</h2>
                 <span class="badge">${currentUser?.username}</span>
             </div>
             <div id="formSuccessMsg" style="display:none;" class="success-msg"></div>
-            <div class="grid-2">
+            <div class="grid-responsive">
                 <!-- Coluna 1: DADOS PESSOAIS -->
                 <div>
                     <div class="section-title">📋 DADOS PESSOAIS</div>
@@ -312,12 +338,16 @@
                     <div class="form-row"><label>CPE (Luz)</label><input id="cpe" value="${data.cpe || ''}" placeholder="PT0000xxxxxxxx"></div>
                 </div>
                 
-                <!-- Coluna 2: LUZ, GÁS, FATURAÇÃO -->
+                <!-- Coluna 2: LUZ, GÁS, COMERCIALIZADORAS -->
                 <div>
                     <div class="section-title">⚡ LUZ</div>
                     <div class="form-row"><label>Potência contratada (kVA)</label><select id="potencia">
                         ${[1.15, 2.3, 3.45, 4.6, 5.75, 6.9, 10.35, 13.8, 20.7].map(p => `<option ${data.potencia == p ? 'selected' : ''}>${p}</option>`).join('')}
                     </select></div>
+                    
+                    <div class="form-row"><label>Comercializadora ATUAL (Luz)</label><select id="comercializadoraAtual">${comOptions}</select></div>
+                    
+                    <div class="form-row"><label>Nova Comercializadora (Luz)</label><select id="comercializadoraNova">${comOptionsNova}</select></div>
                     
                     <div class="section-title">🔥 GÁS</div>
                     <div class="form-row"><label>CUI</label><input id="cui" value="${data.cui || ''}" placeholder="CUI número"></div>
@@ -327,7 +357,10 @@
                         <option ${data.escalaGas == "3" ? "selected" : ""}>3</option>
                         <option ${data.escalaGas == "4" ? "selected" : ""}>4</option>
                     </select></div>
-                    
+                </div>
+                
+                <!-- Coluna 3: FATURAÇÃO E OBS -->
+                <div>
                     <div class="section-title">🧾 TIPO DE FATURAÇÃO</div>
                     <div class="form-row"><label>FE (Fatura Eletrónica)</label><select id="feSelect">
                         <option value="sim" ${data.faturaEletronica ? "selected" : ""}>Sim</option>
@@ -342,11 +375,11 @@
                         <option ${data.tipoEntrada == "Entrada Direta" ? "selected" : ""}>Entrada Direta</option>
                     </select></div>
                     
-                    <div class="form-row"><label>Observações</label><textarea id="obs" rows="2" placeholder="Notas importantes sobre o cliente...">${escapeHtml(data.obs || '')}</textarea></div>
+                    <div class="form-row"><label>Observações</label><textarea id="obs" rows="2" placeholder="Notas importantes...">${escapeHtml(data.obs || '')}</textarea></div>
                     <div class="form-row"><small style="color:rgba(255,255,255,0.7)">🕒 Data/Hora registo: ${data.dataReg}</small></div>
                 </div>
             </div>
-            <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:20px">
+            <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:20px; flex-wrap:wrap">
                 <button class="btn btn-secondary" id="cancelFormBtn">Cancelar</button>
                 <button class="btn" id="saveFormBtn">${isEdit ? "Atualizar" : "Guardar Cliente"}</button>
             </div>
@@ -405,7 +438,7 @@
         moradaField.addEventListener("input", updateMap);
         updateMap();
 
-        // Salvar cliente
+        // Salvar
         document.getElementById("saveFormBtn").onclick = () => {
             const nome = document.getElementById("nome").value.trim();
             if (!nome) { alert("Por favor, preencha o nome do cliente"); return; }
@@ -434,6 +467,8 @@
                 potencia: document.getElementById("potencia").value,
                 cui: document.getElementById("cui").value,
                 escalaGas: document.getElementById("escalaGas").value,
+                comercializadoraAtual: document.getElementById("comercializadoraAtual").value,
+                comercializadoraNova: document.getElementById("comercializadoraNova").value,
                 faturaEletronica: isFe,
                 iban: ibanVal,
                 moradaFatura: moradaFatVal,
@@ -473,6 +508,8 @@
                 document.getElementById("escalaGas").value = "1";
                 document.getElementById("tipoEntrada").value = "Mudança de comercializadora";
                 document.getElementById("feSelect").value = "nao";
+                document.getElementById("comercializadoraAtual").value = comercializadoras[0];
+                document.getElementById("comercializadoraNova").value = comercializadoras[0];
                 updateFaturaFields();
                 initMapPreview("mapPreview", "");
             } else {
@@ -498,16 +535,16 @@
         let html = `<div class="glass-card">
             <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:20px">
                 <h2 style="color:white">📇 Clientes Registados</h2>
-                <div style="display:flex; gap:8px">
+                <div style="display:flex; gap:8px; flex-wrap:wrap">
                     <input id="searchGlobal" placeholder="🔍 Buscar por Nome / NIF / Data" style="width:260px">
                     <button class="btn-sm" id="searchBtnGlass">Buscar</button>
                     <button class="btn" id="newClientBtnGlass">+ Novo Cliente</button>
                 </div>
             </div>
-            <div style="overflow-x:auto">
+            <div class="table-wrapper">
                 <table>
                     <thead>
-                        <tr><th>Nome</th><th>NIF</th><th>Telefone</th><th>Potência</th><th>Gás</th><th>Data Registo</th><th>Lembrete (3+ meses)</th><th>Ações</th></tr>
+                        <tr><th>Nome</th><th>NIF</th><th>Telefone</th><th>Comercializadora Atual</th><th>Nova Comercializadora</th><th>Data Registo</th><th>Lembrete (3+ meses)</th><th>Ações</th></tr>
                     </thead>
                     <tbody>`;
         
@@ -520,7 +557,7 @@
                     const hoje = new Date();
                     const diffMeses = (hoje.getFullYear() - dataReg.getFullYear()) * 12 + (hoje.getMonth() - dataReg.getMonth());
                     if (diffMeses >= 3) {
-                        lembreteHtml = `<span style="color:#ffaa66">🔔 Venda há ${diffMeses} meses. Ligar para troca de comercializadora!</span>`;
+                        lembreteHtml = `<span style="color:#ffaa66">🔔 Venda há ${diffMeses} meses. Ligar para troca!</span>`;
                     }
                 } catch(e) {}
             }
@@ -528,8 +565,8 @@
                 <td>${escapeHtml(c.nome)}</td>
                 <td>${c.nif || '-'}</td>
                 <td>${c.telefone || '-'}</td>
-                <td>${c.potencia} kVA</td>
-                <td>Esc. ${c.escalaGas}</td>
+                <td>${c.comercializadoraAtual || '-'}</td>
+                <td>${c.comercializadoraNova || '-'}</td>
                 <td>${c.dataReg || '-'}</td>
                 <td>${lembreteHtml}</td>
                 <td><button class="btn-sm editBtnGlass" data-id="${c.id}">Editar</button> <button class="btn-sm btn-danger delBtnGlass" data-id="${c.id}">Eliminar</button></td>
@@ -574,9 +611,10 @@
             <h2 style="color:white">👑 Painel Administrador</h2>
             
             <h3 style="color:rgba(255,255,255,0.9); margin:20px 0 10px 0">👥 Colaboradores Cadastrados</h3>
-            <table>
-                <thead><tr><th>Usuário</th><th>Nome</th><th>Perfil</th><th>Ações</th></tr></thead>
-                <tbody>`;
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>Usuário</th><th>Nome</th><th>Perfil</th><th>Ações</th></tr></thead>
+                    <tbody>`;
         for (const u of usersArray) {
             html += `<tr>
                 <td>${escapeHtml(u.username)}</td>
@@ -585,39 +623,35 @@
                 <td><button class="btn-sm btn-danger delUserBtn" data-id="${u.id}" data-user="${u.username}">Remover</button></td>
             </tr>`;
         }
-        html += `</tbody></table>
+        html += `</tbody></table></div>
         
         <hr style="margin:20px 0; border-color:rgba(255,255,255,0.2)">
         <h3 style="color:white">➕ Adicionar Novo Colaborador</h3>
         <div style="display:flex; gap:10px; flex-wrap:wrap; margin:15px 0">
-            <input id="newUsername" placeholder="Usuário" style="flex:1">
-            <input id="newPassword" type="password" placeholder="Senha" style="flex:1">
-            <input id="newNomeColab" placeholder="Nome completo" style="flex:1">
-            <select id="newRoleSelect">
-                <option>vendedor</option>
-                <option>admin</option>
-            </select>
+            <input id="newUsername" placeholder="Usuário" style="flex:1; min-width:140px">
+            <input id="newPassword" type="password" placeholder="Senha" style="flex:1; min-width:140px">
+            <input id="newNomeColab" placeholder="Nome completo" style="flex:1; min-width:140px">
+            <select id="newRoleSelect"><option>vendedor</option><option>admin</option></select>
             <button class="btn" id="createUserBtn">Criar</button>
         </div>
         
         <hr style="margin:20px 0; border-color:rgba(255,255,255,0.2)">
         <h3 style="color:white">📊 Todos os Registos de Clientes</h3>
-        <div style="overflow-x:auto">
+        <div class="table-wrapper">
             <table>
-                <thead><tr><th>Cliente</th><th>Registado por</th><th>Data/Hora</th><th>Tipo Faturação</th><th>Tipo Entrada</th></tr></thead>
+                <thead><tr><th>Cliente</th><th>Registado por</th><th>Data/Hora</th><th>Comercializadora</th><th>Nova Comerc.</th><th>Tipo Entrada</th></tr></thead>
                 <tbody>`;
         for (const c of clientsArray) {
             html += `<tr>
                 <td>${escapeHtml(c.nome)}</td>
                 <td>${c.registradoPor || "?"}</td>
                 <td>${c.dataReg || '-'}</td>
-                <td>${c.faturaEletronica ? "FE ✓ IBAN:" + (c.iban || '---') : "Fatura papel"}</td>
+                <td>${c.comercializadoraAtual || '-'}</td>
+                <td>${c.comercializadoraNova || '-'}</td>
                 <td>${c.tipoEntrada || '-'}</td>
             </tr>`;
         }
-        html += `</tbody>
-            </table>
-        </div>
+        html += `</tbody></table></div>
         <button class="btn-secondary" id="backFromAdmin" style="margin-top:20px">← Voltar para Clientes</button>
         </div>`;
         
@@ -630,14 +664,7 @@
             const role = document.getElementById("newRoleSelect").value;
             if (!uname || !pwd || !nomeC) { alert("Preencha todos os campos"); return; }
             if (usersArray.find(u => u.username === uname)) { alert("Username já existe"); return; }
-            const newUser = {
-                id: Date.now().toString(),
-                username: uname,
-                password: pwd,
-                role: role,
-                nomeColab: nomeC
-            };
-            usersArray.push(newUser);
+            usersArray.push({ id: Date.now().toString(), username: uname, password: pwd, role, nomeColab: nomeC });
             saveLocalData();
             renderAdminPanel();
         });
@@ -678,7 +705,7 @@
         };
     }
 
-    // ==================== TELA DE LOGIN ====================
+    // ==================== LOGIN ====================
     function showLoginScreen() {
         loadLocalData();
         const root = document.getElementById("appRoot");
@@ -715,7 +742,11 @@
         renderListaClientes();
     }
 
-    // Iniciar aplicação
+    // PWA - Registro do Service Worker
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(err => console.log("ServiceWorker error:", err));
+    }
+
     showLoginScreen();
 </script>
 </body>
