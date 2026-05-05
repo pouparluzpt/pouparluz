@@ -2,13 +2,13 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
     <meta name="theme-color" content="#1a2a3a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="EnergyGlass">
-    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22EnergyGlass%22,%22short_name%22:%22EnergyGlass%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%221a2a3a%22,%22theme_color%22:%231a2a3a%22,%22icons%22:[{%22src%22:%22https://via.placeholder.com/192x192?text=EG%22,%22sizes%22:%22192x192%22,%22type%22:%22image/png%22}]}">
-    <title>EnergyGlass · Gestão Comercializadoras PT</title>
+    <meta name="apple-mobile-web-app-title" content="Poupar Luz PT">
+    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Poupar%20Luz%20PT%22,%22short_name%22:%22PouparLuz%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%221a2a3a%22,%22theme_color%22:%221a2a3a%22,%22icons%22:[{%22src%22:%22https://via.placeholder.com/192x192?text=PL%22,%22sizes%22:%22192x192%22,%22type%22:%22image/png%22}]}">
+    <title>Poupar Luz PT · Gestão Comercializadoras</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -17,12 +17,14 @@
             padding: 0;
             box-sizing: border-box;
             font-family: -apple-system, 'Segoe UI', 'SF Pro Text', system-ui, Helvetica, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
             min-height: 100vh;
             background: radial-gradient(circle at 20% 30%, #1a2a3a, #0a0f1a);
             padding: 16px;
+            touch-action: pan-x pan-y; /* impede zoom mas permite scroll */
         }
 
         .glass-card {
@@ -44,13 +46,36 @@
             background: rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(24px);
             border-radius: 60px;
-            padding: 12px 20px;
+            padding: 10px 24px;
             display: flex;
             flex-wrap: wrap;
             align-items: center;
+            justify-content: space-between;
             gap: 12px;
             margin-bottom: 24px;
             border: 1px solid rgba(255, 255, 255, 0.35);
+        }
+
+        .menu-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .menu-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            font-weight: 700;
+            color: white;
+            font-size: 1.2rem;
+            background: rgba(0,0,0,0.2);
+            padding: 6px 16px;
+            border-radius: 40px;
         }
 
         .btn {
@@ -202,7 +227,8 @@
         @media (max-width: 768px) {
             body { padding: 12px; }
             .glass-card { padding: 18px; border-radius: 32px; }
-            .menu-glass { padding: 10px 16px; gap: 8px; }
+            .menu-glass { padding: 10px 16px; flex-direction: column; align-items: stretch; }
+            .menu-left, .menu-right { justify-content: space-between; flex-wrap: wrap; }
             .btn { padding: 8px 16px; font-size: 0.8rem; }
             .section-title { font-size: 1.1rem; }
         }
@@ -313,7 +339,6 @@
             dataReg: nowDateTime(), registradoPor: currentUser?.username
         };
 
-        // Gerar options das comercializadoras
         const comOptions = comercializadoras.map(c => `<option ${data.comercializadoraAtual === c ? 'selected' : ''}>${c}</option>`).join('');
         const comOptionsNova = comercializadoras.map(c => `<option ${data.comercializadoraNova === c ? 'selected' : ''}>${c}</option>`).join('');
 
@@ -325,7 +350,6 @@
             </div>
             <div id="formSuccessMsg" style="display:none;" class="success-msg"></div>
             <div class="grid-responsive">
-                <!-- Coluna 1: DADOS PESSOAIS -->
                 <div>
                     <div class="section-title">📋 DADOS PESSOAIS</div>
                     <div class="form-row"><label>Nome do cliente *</label><input id="nome" value="${escapeHtml(data.nome)}" placeholder="Maria Silva"></div>
@@ -338,7 +362,6 @@
                     <div class="form-row"><label>CPE (Luz)</label><input id="cpe" value="${data.cpe || ''}" placeholder="PT0000xxxxxxxx"></div>
                 </div>
                 
-                <!-- Coluna 2: LUZ, GÁS, COMERCIALIZADORAS -->
                 <div>
                     <div class="section-title">⚡ LUZ</div>
                     <div class="form-row"><label>Potência contratada (kVA)</label><select id="potencia">
@@ -357,9 +380,12 @@
                         <option ${data.escalaGas == "3" ? "selected" : ""}>3</option>
                         <option ${data.escalaGas == "4" ? "selected" : ""}>4</option>
                     </select></div>
+                    
+                    <div class="form-row"><label>Comercializadora ATUAL (Gás)</label><select id="comercializadoraGasAtual">${comOptions}</select></div>
+                    
+                    <div class="form-row"><label>Nova Comercializadora (Gás)</label><select id="comercializadoraGasNova">${comOptionsNova}</select></div>
                 </div>
                 
-                <!-- Coluna 3: FATURAÇÃO E OBS -->
                 <div>
                     <div class="section-title">🧾 TIPO DE FATURAÇÃO</div>
                     <div class="form-row"><label>FE (Fatura Eletrónica)</label><select id="feSelect">
@@ -432,13 +458,11 @@
         if (feSelect) feSelect.addEventListener("change", updateFaturaFields);
         updateFaturaFields();
 
-        // Mapa
         const moradaField = document.getElementById("morada");
         const updateMap = () => initMapPreview("mapPreview", moradaField.value);
         moradaField.addEventListener("input", updateMap);
         updateMap();
 
-        // Salvar
         document.getElementById("saveFormBtn").onclick = () => {
             const nome = document.getElementById("nome").value.trim();
             if (!nome) { alert("Por favor, preencha o nome do cliente"); return; }
@@ -469,6 +493,8 @@
                 escalaGas: document.getElementById("escalaGas").value,
                 comercializadoraAtual: document.getElementById("comercializadoraAtual").value,
                 comercializadoraNova: document.getElementById("comercializadoraNova").value,
+                comercializadoraGasAtual: document.getElementById("comercializadoraGasAtual").value,
+                comercializadoraGasNova: document.getElementById("comercializadoraGasNova").value,
                 faturaEletronica: isFe,
                 iban: ibanVal,
                 moradaFatura: moradaFatVal,
@@ -494,7 +520,6 @@
                 successDiv.innerHTML = "✅ Cliente guardado com sucesso! Formulário limpo para novo registo.";
                 setTimeout(() => successDiv.style.display = "none", 2500);
                 
-                // Limpar formulário
                 document.getElementById("nome").value = "";
                 document.getElementById("nif").value = "";
                 document.getElementById("nasc").value = "";
@@ -510,6 +535,8 @@
                 document.getElementById("feSelect").value = "nao";
                 document.getElementById("comercializadoraAtual").value = comercializadoras[0];
                 document.getElementById("comercializadoraNova").value = comercializadoras[0];
+                document.getElementById("comercializadoraGasAtual").value = comercializadoras[0];
+                document.getElementById("comercializadoraGasNova").value = comercializadoras[0];
                 updateFaturaFields();
                 initMapPreview("mapPreview", "");
             } else {
@@ -544,7 +571,7 @@
             <div class="table-wrapper">
                 <table>
                     <thead>
-                        <tr><th>Nome</th><th>NIF</th><th>Telefone</th><th>Comercializadora Atual</th><th>Nova Comercializadora</th><th>Data Registo</th><th>Lembrete (3+ meses)</th><th>Ações</th></tr>
+                        <tr><th>Nome</th><th>NIF</th><th>Telefone</th><th>Comercializadora Luz Atual</th><th>Nova Comerc. Luz</th><th>Comercializadora Gás Atual</th><th>Nova Comerc. Gás</th><th>Data Registo</th><th>Lembrete</th><th>Ações</th></tr>
                     </thead>
                     <tbody>`;
         
@@ -557,23 +584,25 @@
                     const hoje = new Date();
                     const diffMeses = (hoje.getFullYear() - dataReg.getFullYear()) * 12 + (hoje.getMonth() - dataReg.getMonth());
                     if (diffMeses >= 3) {
-                        lembreteHtml = `<span style="color:#ffaa66">🔔 Venda há ${diffMeses} meses. Ligar para troca!</span>`;
+                        lembreteHtml = `<span style="color:#ffaa66">🔔 ${diffMeses} meses - Ligar!</span>`;
                     }
                 } catch(e) {}
             }
-            html += `<tr>
+            html += `</table>
                 <td>${escapeHtml(c.nome)}</td>
                 <td>${c.nif || '-'}</td>
                 <td>${c.telefone || '-'}</td>
                 <td>${c.comercializadoraAtual || '-'}</td>
                 <td>${c.comercializadoraNova || '-'}</td>
+                <td>${c.comercializadoraGasAtual || '-'}</td>
+                <td>${c.comercializadoraGasNova || '-'}</td>
                 <td>${c.dataReg || '-'}</td>
                 <td>${lembreteHtml}</td>
                 <td><button class="btn-sm editBtnGlass" data-id="${c.id}">Editar</button> <button class="btn-sm btn-danger delBtnGlass" data-id="${c.id}">Eliminar</button></td>
             </tr>`;
         }
         html += `</tbody>
-                </table>
+                <td></div>
                 ${filtered.length === 0 ? "<p style='color:white; text-align:center; padding:20px'>Nenhum cliente encontrado</p>" : ""}
             </div>
         </div>`;
@@ -623,7 +652,8 @@
                 <td><button class="btn-sm btn-danger delUserBtn" data-id="${u.id}" data-user="${u.username}">Remover</button></td>
             </tr>`;
         }
-        html += `</tbody></table></div>
+        html += `</tbody>
+                </table></div>
         
         <hr style="margin:20px 0; border-color:rgba(255,255,255,0.2)">
         <h3 style="color:white">➕ Adicionar Novo Colaborador</h3>
@@ -639,7 +669,7 @@
         <h3 style="color:white">📊 Todos os Registos de Clientes</h3>
         <div class="table-wrapper">
             <table>
-                <thead><tr><th>Cliente</th><th>Registado por</th><th>Data/Hora</th><th>Comercializadora</th><th>Nova Comerc.</th><th>Tipo Entrada</th></tr></thead>
+                <thead><tr><th>Cliente</th><th>Registado por</th><th>Data/Hora</th><th>Comerc.Luz</th><th>Nova Luz</th><th>Comerc.Gás</th><th>Nova Gás</th><th>Tipo Entrada</th></tr></thead>
                 <tbody>`;
         for (const c of clientsArray) {
             html += `<tr>
@@ -648,10 +678,13 @@
                 <td>${c.dataReg || '-'}</td>
                 <td>${c.comercializadoraAtual || '-'}</td>
                 <td>${c.comercializadoraNova || '-'}</td>
+                <td>${c.comercializadoraGasAtual || '-'}</td>
+                <td>${c.comercializadoraGasNova || '-'}</td>
                 <td>${c.tipoEntrada || '-'}</td>
             </tr>`;
         }
-        html += `</tbody></table></div>
+        html += `</tbody>
+            </table></div>
         <button class="btn-secondary" id="backFromAdmin" style="margin-top:20px">← Voltar para Clientes</button>
         </div>`;
         
@@ -687,12 +720,15 @@
     function renderMenu() {
         const menuDiv = document.getElementById("menuContainer");
         menuDiv.innerHTML = `<div class="menu-glass">
-            <span style="font-weight:700; color:white">⚡ EnergyGlass · Portugal</span>
-            <button id="menuClientes" class="btn-sm">🏠 Clientes</button>
-            ${currentUser?.role === "admin" ? `<button id="menuAdmin" class="btn-sm">👑 Admin</button>` : ""}
-            <span style="flex:1"></span>
-            <span style="color:white">👤 ${currentUser?.username} (${currentUser?.role})</span>
-            <button id="logoutBtnMain" class="btn-sm btn-danger">Sair</button>
+            <div class="menu-left">
+                <span class="logo">💡 Poupar Luz PT</span>
+                <button id="menuClientes" class="btn-sm">🏠 Clientes</button>
+                ${currentUser?.role === "admin" ? `<button id="menuAdmin" class="btn-sm">👑 Admin</button>` : ""}
+            </div>
+            <div class="menu-right">
+                <span style="color:white">👤 ${currentUser?.username} (${currentUser?.role})</span>
+                <button id="logoutBtnMain" class="btn-sm btn-danger">Sair</button>
+            </div>
         </div>`;
         
         document.getElementById("menuClientes").onclick = () => renderListaClientes();
@@ -711,13 +747,11 @@
         const root = document.getElementById("appRoot");
         root.innerHTML = `<div class="login-overlay">
             <div class="glass-card login-card">
-                <h2 style="color:white; text-align:center">🔐 EnergyGlass</h2>
+                <h2 style="color:white; text-align:center">💡 Poupar Luz PT</h2>
                 <input id="loginUser" placeholder="Usuário" value="admin" style="margin:10px 0">
                 <input id="loginPass" type="password" placeholder="Senha" value="admin123">
                 <button class="btn" id="loginBtn" style="width:100%; margin-top:10px">Entrar</button>
                 <div id="loginErrorMsg" style="color:#ffaa88; margin-top:12px; text-align:center"></div>
-                <hr style="margin:16px 0; border-color:rgba(255,255,255,0.2)">
-                <small style="color:white; display:block; text-align:center">🔑 admin / admin123 &nbsp;|&nbsp; vendedor / vender123</small>
             </div>
         </div>`;
         
@@ -729,7 +763,7 @@
                 currentUser = userFound;
                 initMainApp();
             } else {
-                document.getElementById("loginErrorMsg").innerText = "Credenciais inválidas! Use admin/admin123";
+                document.getElementById("loginErrorMsg").innerText = "Credenciais inválidas!";
             }
         };
     }
@@ -740,11 +774,6 @@
         root.innerHTML = `<div id="menuContainer"></div><div id="mainContent"></div>`;
         renderMenu();
         renderListaClientes();
-    }
-
-    // PWA - Registro do Service Worker
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js').catch(err => console.log("ServiceWorker error:", err));
     }
 
     showLoginScreen();
