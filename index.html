@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt">
 <head>
@@ -24,7 +25,8 @@
             min-height: 100vh;
             background: radial-gradient(circle at 20% 30%, #1a2a3a, #0a0f1a);
             padding: 16px;
-            touch-action: pan-x pan-y; /* impede zoom mas permite scroll */
+            touch-action: pan-x pan-y;
+            overflow-x: hidden;
         }
 
         .glass-card {
@@ -42,52 +44,59 @@
             margin: 0 auto;
         }
 
+        /* Menu - UMA ÚNICA LINHA (flex nowrap) */
         .menu-glass {
             background: rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(24px);
             border-radius: 60px;
-            padding: 10px 24px;
+            padding: 8px 20px;
             display: flex;
-            flex-wrap: wrap;
+            flex-direction: row;
+            flex-wrap: nowrap;
             align-items: center;
             justify-content: space-between;
             gap: 12px;
             margin-bottom: 24px;
             border: 1px solid rgba(255, 255, 255, 0.35);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .menu-left {
             display: flex;
             align-items: center;
-            gap: 16px;
-            flex-wrap: wrap;
+            gap: 12px;
+            flex-shrink: 0;
         }
 
         .menu-right {
             display: flex;
             align-items: center;
             gap: 12px;
+            flex-shrink: 0;
         }
 
         .logo {
             font-weight: 700;
             color: white;
-            font-size: 1.2rem;
+            font-size: 1rem;
             background: rgba(0,0,0,0.2);
-            padding: 6px 16px;
+            padding: 6px 14px;
             border-radius: 40px;
+            white-space: nowrap;
         }
 
         .btn {
             background: rgba(0, 87, 163, 0.9);
             border: none;
-            padding: 10px 20px;
+            padding: 8px 16px;
             border-radius: 40px;
             font-weight: 600;
             color: white;
             cursor: pointer;
             transition: 0.2s;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            white-space: nowrap;
         }
 
         .btn-secondary {
@@ -99,8 +108,8 @@
         }
 
         .btn-sm {
-            padding: 6px 14px;
-            font-size: 0.75rem;
+            padding: 5px 12px;
+            font-size: 0.7rem;
         }
 
         input, select, textarea {
@@ -133,7 +142,7 @@
 
         .grid-responsive {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 24px;
         }
 
@@ -160,29 +169,78 @@
             margin-top: 0;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: rgba(0,0,0,0.2);
-            border-radius: 28px;
-            overflow-x: auto;
-            display: block;
-        }
-
-        th, td {
-            padding: 12px 8px;
-            text-align: left;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-            color: white;
-        }
-
-        th {
-            background: rgba(0,0,0,0.3);
-        }
-
+        /* TABELA RESPONSIVA - com scroll horizontal suave e melhor legibilidade */
         .table-wrapper {
             overflow-x: auto;
             border-radius: 28px;
+            margin: 8px 0;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            width: 100%;
+            min-width: 900px;
+            border-collapse: collapse;
+            background: rgba(0,0,0,0.25);
+            border-radius: 28px;
+            font-size: 0.8rem;
+        }
+
+        th, td {
+            padding: 12px 10px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            vertical-align: middle;
+        }
+
+        th {
+            background: rgba(0,0,0,0.4);
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        /* Cards para listagem em mobile (alternativa visual sem perder dados) */
+        @media (max-width: 780px) {
+            table, .table-wrapper table {
+                min-width: 100%;
+                display: block;
+            }
+            /* Em telas pequenas, a tabela continua com scroll horizontal, mas melhoramos o espaçamento */
+            th, td {
+                padding: 10px 8px;
+                font-size: 0.7rem;
+            }
+            .btn-sm {
+                padding: 4px 8px;
+                font-size: 0.65rem;
+            }
+        }
+
+        /* Para telas muito pequenas, reduzimos padding */
+        @media (max-width: 480px) {
+            .glass-card {
+                padding: 16px;
+            }
+            .menu-glass {
+                padding: 6px 12px;
+                gap: 8px;
+            }
+            .logo {
+                font-size: 0.8rem;
+                padding: 4px 10px;
+            }
+            .btn {
+                padding: 6px 12px;
+                font-size: 0.7rem;
+            }
+            .section-title {
+                font-size: 1.1rem;
+            }
+            input, select, textarea {
+                padding: 10px 12px;
+            }
         }
 
         .login-overlay {
@@ -220,22 +278,23 @@
             padding: 4px 12px;
             font-size: 0.7rem;
             color: white;
+            white-space: nowrap;
         }
 
         button:hover { opacity: 0.9; transform: scale(0.98); }
         
-        @media (max-width: 768px) {
-            body { padding: 12px; }
-            .glass-card { padding: 18px; border-radius: 32px; }
-            .menu-glass { padding: 10px 16px; flex-direction: column; align-items: stretch; }
-            .menu-left, .menu-right { justify-content: space-between; flex-wrap: wrap; }
-            .btn { padding: 8px 16px; font-size: 0.8rem; }
-            .section-title { font-size: 1.1rem; }
+        /* Remove scrollbars desnecessários no body */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
         }
-
-        @media (max-width: 480px) {
-            .grid-responsive { gap: 16px; }
-            input, select, textarea { padding: 10px 14px; font-size: 0.85rem; }
+        ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.4);
+            border-radius: 10px;
         }
     </style>
 </head>
@@ -264,7 +323,7 @@
             usersArray = JSON.parse(storedUsers);
         } else {
             usersArray = [
-                { id: "1", username: "admin", password: "admin123", role: "admin", nomeColab: "Administrador" },
+                { id: "1", username: "*****", password: "******", role: "admin", nomeColab: "Administrador" },
                 { id: "2", username: "vendedor", password: "vender123", role: "vendedor", nomeColab: "Joana Vendas" }
             ];
             saveLocalData();
@@ -334,6 +393,7 @@
             nome: "", nif: "", nasc: "", telefone: "", email: "", morada: "", cpe: "",
             potencia: "3.45", cui: "", escalaGas: "1", 
             comercializadoraAtual: comercializadoras[0], comercializadoraNova: comercializadoras[0],
+            comercializadoraGasAtual: comercializadoras[0], comercializadoraGasNova: comercializadoras[0],
             faturaEletronica: false, iban: "", moradaFatura: "", mesmaMorada: true, 
             tipoEntrada: "Mudança de comercializadora", obs: "",
             dataReg: nowDateTime(), registradoPor: currentUser?.username
@@ -341,6 +401,8 @@
 
         const comOptions = comercializadoras.map(c => `<option ${data.comercializadoraAtual === c ? 'selected' : ''}>${c}</option>`).join('');
         const comOptionsNova = comercializadoras.map(c => `<option ${data.comercializadoraNova === c ? 'selected' : ''}>${c}</option>`).join('');
+        const comOptionsGas = comercializadoras.map(c => `<option ${data.comercializadoraGasAtual === c ? 'selected' : ''}>${c}</option>`).join('');
+        const comOptionsGasNova = comercializadoras.map(c => `<option ${data.comercializadoraGasNova === c ? 'selected' : ''}>${c}</option>`).join('');
 
         const html = `
         <div class="glass-card">
@@ -381,9 +443,9 @@
                         <option ${data.escalaGas == "4" ? "selected" : ""}>4</option>
                     </select></div>
                     
-                    <div class="form-row"><label>Comercializadora ATUAL (Gás)</label><select id="comercializadoraGasAtual">${comOptions}</select></div>
+                    <div class="form-row"><label>Comercializadora ATUAL (Gás)</label><select id="comercializadoraGasAtual">${comOptionsGas}</select></div>
                     
-                    <div class="form-row"><label>Nova Comercializadora (Gás)</label><select id="comercializadoraGasNova">${comOptionsNova}</select></div>
+                    <div class="form-row"><label>Nova Comercializadora (Gás)</label><select id="comercializadoraGasNova">${comOptionsGasNova}</select></div>
                 </div>
                 
                 <div>
@@ -416,7 +478,6 @@
 
         document.getElementById("mainContent").innerHTML = html;
 
-        // Configurar campos dinâmicos de faturação
         const updateFaturaFields = () => {
             const isFe = document.getElementById("feSelect").value === "sim";
             const container = document.getElementById("faturaDinamica");
@@ -511,15 +572,13 @@
             } else {
                 clientsArray.push(clienteObj);
             }
-            
             saveLocalData();
             
             if (!isEdit) {
                 const successDiv = document.getElementById("formSuccessMsg");
                 successDiv.style.display = "block";
-                successDiv.innerHTML = "✅ Cliente guardado com sucesso! Formulário limpo para novo registo.";
+                successDiv.innerHTML = "✅ Cliente guardado! Formulário limpo para novo registo.";
                 setTimeout(() => successDiv.style.display = "none", 2500);
-                
                 document.getElementById("nome").value = "";
                 document.getElementById("nif").value = "";
                 document.getElementById("nasc").value = "";
@@ -543,11 +602,10 @@
                 renderListaClientes();
             }
         };
-        
         document.getElementById("cancelFormBtn").onclick = () => renderListaClientes();
     }
 
-    // ==================== LISTA DE CLIENTES ====================
+    // ==================== LISTA DE CLIENTES COM TABELA RESPONSIVA ====================
     function renderListaClientes(searchTerm = "") {
         let filtered = clientsArray;
         if (searchTerm && searchTerm.trim() !== "") {
@@ -571,7 +629,7 @@
             <div class="table-wrapper">
                 <table>
                     <thead>
-                        <tr><th>Nome</th><th>NIF</th><th>Telefone</th><th>Comercializadora Luz Atual</th><th>Nova Comerc. Luz</th><th>Comercializadora Gás Atual</th><th>Nova Comerc. Gás</th><th>Data Registo</th><th>Lembrete</th><th>Ações</th></tr>
+                        <tr><th>Nome</th><th>NIF</th><th>Telefone</th><th>Comerc. Luz Atual</th><th>Nova Comerc. Luz</th><th>Comerc. Gás Atual</th><th>Nova Comerc. Gás</th><th>Data Registo</th><th>Lembrete</th><th>Ações</th></tr>
                     </thead>
                     <tbody>`;
         
@@ -588,7 +646,7 @@
                     }
                 } catch(e) {}
             }
-            html += `</table>
+            html += `<tr>
                 <td>${escapeHtml(c.nome)}</td>
                 <td>${c.nif || '-'}</td>
                 <td>${c.telefone || '-'}</td>
@@ -602,7 +660,7 @@
             </tr>`;
         }
         html += `</tbody>
-                <td></div>
+                </table>
                 ${filtered.length === 0 ? "<p style='color:white; text-align:center; padding:20px'>Nenhum cliente encontrado</p>" : ""}
             </div>
         </div>`;
@@ -629,32 +687,19 @@
         });
     }
 
-    // ==================== PAINEL ADMIN ====================
+    // ==================== PAINEL ADMIN (inalterado nas funções) ====================
     function renderAdminPanel() {
-        if (currentUser?.role !== "admin") {
-            renderListaClientes();
-            return;
-        }
-        
+        if (currentUser?.role !== "admin") { renderListaClientes(); return; }
         let html = `<div class="glass-card">
             <h2 style="color:white">👑 Painel Administrador</h2>
-            
             <h3 style="color:rgba(255,255,255,0.9); margin:20px 0 10px 0">👥 Colaboradores Cadastrados</h3>
             <div class="table-wrapper">
-                <table>
-                    <thead><tr><th>Usuário</th><th>Nome</th><th>Perfil</th><th>Ações</th></tr></thead>
-                    <tbody>`;
+                <table><thead><tr><th>Usuário</th><th>Nome</th><th>Perfil</th><th>Ações</th></tr></thead><tbody>`;
         for (const u of usersArray) {
-            html += `<tr>
-                <td>${escapeHtml(u.username)}</td>
-                <td>${escapeHtml(u.nomeColab)}</td>
-                <td>${u.role}</td>
-                <td><button class="btn-sm btn-danger delUserBtn" data-id="${u.id}" data-user="${u.username}">Remover</button></td>
-            </tr>`;
+            html += `<tr><td>${escapeHtml(u.username)}</td><td>${escapeHtml(u.nomeColab)}</td><td>${u.role}</td>
+            <td><button class="btn-sm btn-danger delUserBtn" data-id="${u.id}" data-user="${u.username}">Remover</button></td></tr>`;
         }
-        html += `</tbody>
-                </table></div>
-        
+        html += `</tbody></table></div>
         <hr style="margin:20px 0; border-color:rgba(255,255,255,0.2)">
         <h3 style="color:white">➕ Adicionar Novo Colaborador</h3>
         <div style="display:flex; gap:10px; flex-wrap:wrap; margin:15px 0">
@@ -664,32 +709,17 @@
             <select id="newRoleSelect"><option>vendedor</option><option>admin</option></select>
             <button class="btn" id="createUserBtn">Criar</button>
         </div>
-        
-        <hr style="margin:20px 0; border-color:rgba(255,255,255,0.2)">
+        <hr style="margin:20px 0">
         <h3 style="color:white">📊 Todos os Registos de Clientes</h3>
-        <div class="table-wrapper">
-            <table>
-                <thead><tr><th>Cliente</th><th>Registado por</th><th>Data/Hora</th><th>Comerc.Luz</th><th>Nova Luz</th><th>Comerc.Gás</th><th>Nova Gás</th><th>Tipo Entrada</th></tr></thead>
-                <tbody>`;
+        <div class="table-wrapper"><table><thead><tr><th>Cliente</th><th>Registado por</th><th>Data/Hora</th><th>Comerc.Luz</th><th>Nova Luz</th><th>Comerc.Gás</th><th>Nova Gás</th><th>Tipo Entrada</th></tr></thead><tbody>`;
         for (const c of clientsArray) {
-            html += `<tr>
-                <td>${escapeHtml(c.nome)}</td>
-                <td>${c.registradoPor || "?"}</td>
-                <td>${c.dataReg || '-'}</td>
-                <td>${c.comercializadoraAtual || '-'}</td>
-                <td>${c.comercializadoraNova || '-'}</td>
-                <td>${c.comercializadoraGasAtual || '-'}</td>
-                <td>${c.comercializadoraGasNova || '-'}</td>
-                <td>${c.tipoEntrada || '-'}</td>
-            </tr>`;
+            html += `<tr><td>${escapeHtml(c.nome)}</td><td>${c.registradoPor || "?"}</td><td>${c.dataReg || '-'}</td>
+            <td>${c.comercializadoraAtual || '-'}</td><td>${c.comercializadoraNova || '-'}</td>
+            <td>${c.comercializadoraGasAtual || '-'}</td><td>${c.comercializadoraGasNova || '-'}</td>
+            <td>${c.tipoEntrada || '-'}</td></tr>`;
         }
-        html += `</tbody>
-            </table></div>
-        <button class="btn-secondary" id="backFromAdmin" style="margin-top:20px">← Voltar para Clientes</button>
-        </div>`;
-        
+        html += `</tbody></table></div><button class="btn-secondary" id="backFromAdmin" style="margin-top:20px">← Voltar para Clientes</button></div>`;
         document.getElementById("mainContent").innerHTML = html;
-        
         document.getElementById("createUserBtn")?.addEventListener("click", () => {
             const uname = document.getElementById("newUsername").value;
             const pwd = document.getElementById("newPassword").value;
@@ -701,7 +731,6 @@
             saveLocalData();
             renderAdminPanel();
         });
-        
         document.querySelectorAll(".delUserBtn").forEach(btn => {
             btn.addEventListener("click", () => {
                 const userId = btn.getAttribute("data-id");
@@ -712,11 +741,10 @@
                 renderAdminPanel();
             });
         });
-        
         document.getElementById("backFromAdmin")?.addEventListener("click", () => renderListaClientes());
     }
 
-    // ==================== MENU ====================
+    // ==================== MENU (UMA ÚNICA LINHA) ====================
     function renderMenu() {
         const menuDiv = document.getElementById("menuContainer");
         menuDiv.innerHTML = `<div class="menu-glass">
@@ -726,22 +754,15 @@
                 ${currentUser?.role === "admin" ? `<button id="menuAdmin" class="btn-sm">👑 Admin</button>` : ""}
             </div>
             <div class="menu-right">
-                <span style="color:white">👤 ${currentUser?.username} (${currentUser?.role})</span>
+                <span style="color:white; font-size:0.8rem; white-space:nowrap">👤 ${currentUser?.username} (${currentUser?.role})</span>
                 <button id="logoutBtnMain" class="btn-sm btn-danger">Sair</button>
             </div>
         </div>`;
-        
         document.getElementById("menuClientes").onclick = () => renderListaClientes();
-        if (currentUser?.role === "admin") {
-            document.getElementById("menuAdmin").onclick = () => renderAdminPanel();
-        }
-        document.getElementById("logoutBtnMain").onclick = () => {
-            currentUser = null;
-            showLoginScreen();
-        };
+        if (currentUser?.role === "admin") document.getElementById("menuAdmin").onclick = () => renderAdminPanel();
+        document.getElementById("logoutBtnMain").onclick = () => { currentUser = null; showLoginScreen(); };
     }
 
-    // ==================== LOGIN ====================
     function showLoginScreen() {
         loadLocalData();
         const root = document.getElementById("appRoot");
@@ -754,28 +775,21 @@
                 <div id="loginErrorMsg" style="color:#ffaa88; margin-top:12px; text-align:center"></div>
             </div>
         </div>`;
-        
         document.getElementById("loginBtn").onclick = () => {
             const u = document.getElementById("loginUser").value;
             const p = document.getElementById("loginPass").value;
             const userFound = usersArray.find(us => us.username === u && us.password === p);
-            if (userFound) {
-                currentUser = userFound;
-                initMainApp();
-            } else {
-                document.getElementById("loginErrorMsg").innerText = "Credenciais inválidas!";
-            }
+            if (userFound) { currentUser = userFound; initMainApp(); } 
+            else { document.getElementById("loginErrorMsg").innerText = "Credenciais inválidas!"; }
         };
     }
 
-    // ==================== INICIALIZAÇÃO ====================
     function initMainApp() {
         const root = document.getElementById("appRoot");
         root.innerHTML = `<div id="menuContainer"></div><div id="mainContent"></div>`;
         renderMenu();
         renderListaClientes();
     }
-
     showLoginScreen();
 </script>
 </body>
