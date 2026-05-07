@@ -1,0 +1,3497 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Caixa - Studio DeVitto</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<style>
+:root {
+  --primary-color: #26196b;
+  --secondary-color: #D4AF37;
+  --accent-color: #e1bee7;
+  --light-color: #f3e5f5;
+  --dark-color: #1a1151;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f8f9fa;
+  color: #333;
+}
+
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: var(--primary-color);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  background-color: white;
+}
+
+.login-logo {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 20px;
+  display: block;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.password-input {
+  position: relative;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #777;
+}
+
+.navbar-brand {
+  font-weight: 700;
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 10px;
+}
+
+.card {
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  border: none;
+}
+
+.card-header {
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: 10px 10px 0 0 !important;
+  font-weight: 600;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+  background-color: var(--dark-color);
+  border-color: var(--dark-color);
+}
+
+.btn-secondary {
+  background-color: var(--secondary-color);
+  border-color: var(--secondary-color);
+  color: #000;
+}
+
+.btn-secondary:hover {
+  background-color: #c9a227;
+  border-color: #c9a227;
+  color: #000;
+}
+
+.service-item {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.service-item:hover {
+  background-color: var(--light-color);
+}
+
+.service-item.selected {
+  background-color: var(--accent-color);
+  border-left: 4px solid var(--primary-color);
+}
+
+.professional-section {
+  border-left: 4px solid var(--primary-color);
+  padding-left: 15px;
+  margin-bottom: 20px;
+}
+
+.payment-method {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.payment-method:hover {
+  background-color: var(--light-color);
+}
+
+.payment-method.selected {
+  background-color: var(--accent-color);
+  border-left: 4px solid var(--primary-color);
+}
+
+.summary-item {
+  border-bottom: 1px solid #eee;
+  padding: 10px 0;
+}
+
+.summary-item:last-child {
+  border-bottom: none;
+}
+
+.report-section {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.hidden {
+  display: none;
+}
+
+#cashFields {
+  transition: all 0.3s ease;
+}
+
+.total-display {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+.professional-total {
+  font-weight: bold;
+  color: var(--secondary-color);
+}
+
+.commission {
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.advance-section {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.cash-balance {
+  background-color: #e9f7ef;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 15px;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #reportContent, #reportContent * {
+    visibility: visible;
+  }
+
+  #reportContent {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 20px;
+    margin: 0;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}
+
+.pdf-only {
+  display: none;
+}
+
+.main-content {
+  display: none;
+}
+
+.btn-whatsapp {
+  background-color: #25D366;
+  color: white;
+  border-color: #25D366;
+}
+
+.btn-whatsapp:hover {
+  background-color: #128C7E;
+  border-color: #128C7E;
+  color: white;
+}
+
+.btn-save-pdf {
+  background-color: #6c757d;
+  color: white;
+  border-color: #6c757d;
+}
+
+.btn-save-pdf:hover {
+  background-color: #5a6268;
+  border-color: #545b62;
+  color: white;
+}
+
+.country-code-select {
+  max-width: 120px;
+}
+
+.client-phone-group {
+  display: flex;
+}
+
+.client-phone-group select {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.client-phone-group input {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-left: 0;
+}
+
+/* Novos estilos adicionados */
+.editable-price {
+  background-color: #fffde7;
+  border: 1px dashed #ffd600;
+  padding: 2px 5px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.extra-service-card {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-left: 4px solid var(--secondary-color);
+  order: -1; /* Move para o topo */
+}
+
+.birthday-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.birthday-item {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.birthday-item:hover {
+  background-color: #f3e5f5;
+}
+
+.contacts-search {
+  margin-bottom: 15px;
+}
+
+.contacts-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.contact-item {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.contact-item:hover {
+  background-color: #f5f5f5;
+}
+
+.edit-contact {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  color: var(--primary-color);
+  cursor: pointer;
+}
+
+/* Estilos para a barra de pesquisa de serviços */
+.service-search-container {
+  margin-bottom: 15px;
+}
+
+/* Estilo para os serviços em ordem alfabética */
+.service-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* Espaçamento entre as seções principais */
+.main-section {
+  margin-bottom: 30px;
+}
+
+/* Menu flutuante de aniversário */
+.birthday-floating-menu {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  width: 300px;
+  max-height: 400px;
+  overflow: hidden;
+  display: none;
+}
+
+.birthday-floating-header {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 10px 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.birthday-floating-title {
+  font-weight: bold;
+  margin: 0;
+}
+
+.birthday-floating-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.birthday-floating-body {
+  padding: 15px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.birthday-floating-item {
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.birthday-floating-item:hover {
+  background-color: #f5f5f5;
+}
+
+.birthday-floating-item-name {
+  font-weight: bold;
+}
+
+.birthday-floating-item-date {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.birthday-floating-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: gold; /* Alterado para gold */
+  color: #26196b; /* Cor do ícone alterada para #26196b */
+  border: none;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5rem;
+  cursor: pointer;
+  z-index: 999;
+}
+
+.birthday-floating-btn:hover {
+  background-color: #e6c200;
+}
+
+.birthday-floating-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: #dc3545;
+  color: white;
+  border-radius: 50%;
+  width: 25px;
+  height: 25px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.8rem;
+}
+
+/* Estilos para cores de aniversário */
+.birthday-soon {
+  background-color: #d4edda; /* Verde para 7-10 dias antes */
+  border-left: 4px solid #28a745;
+}
+
+.birthday-very-soon {
+  background-color: #fff3cd; /* Amarelo/Laranja para 2-6 dias antes */
+  border-left: 4px solid #ffc107;
+}
+
+.birthday-today {
+  background-color: #f8d7da; /* Vermelho para o dia do aniversário */
+  border-left: 4px solid #dc3545;
+}
+
+/* Modal de edição de contato */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.modal-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--primary-color);
+  margin: 0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #777;
+}
+
+.modal-body {
+  margin-bottom: 20px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Botão de adicionar contato */
+.add-contact-btn {
+  margin-bottom: 15px;
+}
+</style>
+</head>
+<body>
+<!-- Tela de Login -->
+<div id="loginScreen" class="login-container">
+  <div class="login-card">
+    <img src="https://studiodevitto.com/wp-content/uploads/2025/07/Logo-Studio-DeVitto.png" alt="Studio DeVitto" class="login-logo">
+    <h2 class="text-center mb-4" style="color: var(--primary-color);">Studio DeVitto</h2>
+    <h5 class="text-center mb-4">Sistema de Caixa</h5>
+
+    <form id="loginForm">
+      <div class="mb-3">
+        <label for="username" class="form-label">Usuário</label>
+        <input type="text" class="form-control" id="username" required>
+      </div>
+      <div class="mb-3 password-input">
+        <label for="password" class="form-label">Senha</label>
+        <input type="password" class="form-control" id="password" required>
+        <i class="fas fa-eye toggle-password" id="togglePassword"></i>
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Entrar</button>
+    </form>
+  </div>
+</div>
+
+<!-- Conteúdo Principal (oculto inicialmente) -->
+<div id="mainContent" class="main-content">
+  <!-- Modal de edição de contato -->
+  <div id="editContactModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Editar Contato</h3>
+        <button class="modal-close" id="closeEditContactModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="editContactName" class="form-label">Nome do Cliente</label>
+          <input type="text" class="form-control" id="editContactName">
+        </div>
+        <div class="mb-3">
+          <label for="editContactPhone" class="form-label">Telefone/Contacto</label>
+          <div class="client-phone-group">
+            <select class="form-select country-code-select" id="editCountryCode">
+              <option value="+351">🇵🇹 +351</option>
+              <option value="+55">🇧🇷 +55</option>
+              <option value="+34">🇪🇸 +34</option>
+              <option value="+33">🇫🇷 +33</option>
+              <option value="+49">🇩🇪 +49</option>
+              <option value="+39">🇮🇹 +39</option>
+              <option value="+44">🇬🇧 +44</option>
+              <option value="+1">🇺🇸 +1</option>
+              <option value="other">Outro</option>
+            </select>
+            <input type="text" class="form-control" id="editContactPhone">
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="editContactBirthday" class="form-label">Data de Nascimento</label>
+          <input type="date" class="form-control" id="editContactBirthday">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="cancelEditContact">Cancelar</button>
+        <button class="btn btn-primary" id="saveContactChanges">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botão flutuante de aniversário -->
+  <button id="birthdayFloatingBtn" class="birthday-floating-btn hidden">
+    <i class="fas fa-birthday-cake" style="color: #26196b;"></i>
+    <span id="birthdayBadge" class="birthday-floating-badge hidden">0</span>
+  </button>
+
+  <!-- Menu flutuante de aniversário -->
+  <div id="birthdayFloatingMenu" class="birthday-floating-menu">
+    <div class="birthday-floating-header">
+      <h5 class="birthday-floating-title">Aniversários Próximos</h5>
+      <button id="birthdayFloatingClose" class="birthday-floating-close">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="birthday-floating-body" id="birthdayFloatingList">
+      <!-- Itens de aniversário serão adicionados dinamicamente -->
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">
+          <img src="https://studiodevitto.com/wp-content/uploads/2025/07/Logo-Studio-DeVitto.png" alt="Studio DeVitto" class="logo">
+          Sistema de Caixa - Studio DeVitto
+        </a>
+        <button id="logoutBtn" class="btn btn-outline-danger">Sair</button>
+      </div>
+    </nav>
+
+    <!-- Seção de Abertura de Caixa -->
+    <div class="card mb-4" id="openCashSection">
+      <div class="card-header">
+        <i class="fas fa-cash-register me-2"></i>Abertura de Caixa
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label for="initialAmount" class="form-label">Montante Inicial (€)</label>
+              <input type="number" class="form-control" id="initialAmount" step="0.01" min="0" value="0">
+            </div>
+            <button id="openCashBtn" class="btn btn-primary">Abrir Caixa</button>
+          </div>
+          <div class="col-md-6 cash-balance">
+            <h5>Saldo do Caixa</h5>
+            <p><strong>Valor Inicial:</strong> <span id="displayInitialAmount">€0.00</span></p>
+            <p><strong>Total de Vendas:</strong> <span id="displaySalesTotal">€0.00</span></p>
+            <p><strong>Total Antecipado:</strong> <span id="displayAdvancesTotal">€0.00</span></p>
+            <p><strong>Saldo Atual:</strong> <span id="displayCurrentBalance">€0.00</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Seções principais reorganizadas conforme solicitado -->
+    <div class="row main-section">
+      <!-- Painel de Serviços -->
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-header">
+            <i class="fas fa-scissors me-2"></i>Serviços
+          </div>
+          <div class="card-body">
+            <!-- Seção de Serviço Extra movida para o topo -->
+            <div class="extra-service-card">
+              <h5 class="mb-3"><i class="fas fa-plus-circle me-2"></i>Serviço Extra</h5>
+              <div class="mb-3">
+                <label for="extraServiceName" class="form-label">Nome do Serviço</label>
+                <input type="text" class="form-control" id="extraServiceName" placeholder="Descrição do serviço extra">
+              </div>
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="extraServicePrice" class="form-label">Valor (€)</label>
+                  <input type="number" class="form-control" id="extraServicePrice" step="0.01" min="0" placeholder="0.00">
+                </div>
+                <div class="col-md-6">
+                  <label for="extraServiceProfessional" class="form-label">Profissional</label>
+                  <select class="form-select" id="extraServiceProfessional">
+                    <option value="Vittor Carvalho">Vittor Carvalho</option>
+                    <option value="Paula Coelho">Paula Coelho</option>
+                    <option value="Tiago Martins">Tiago Martins</option>
+                  </select>
+                </div>
+              </div>
+              <button id="addExtraServiceBtn" class="btn btn-primary w-100">
+                <i class="fas fa-plus me-2"></i>Adicionar Serviço Extra
+              </button>
+            </div>
+
+            <div class="service-search-container">
+              <div class="input-group mb-3">
+                <input type="text" class="form-control" id="serviceSearch" placeholder="Pesquisar serviço...">
+                <button class="btn btn-outline-secondary" type="button" id="clearServiceSearch">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+
+            <ul class="nav nav-tabs" id="serviceTabs" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="vittor-tab" data-bs-toggle="tab" data-bs-target="#vittor" type="button" role="tab">Vittor</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="paula-tab" data-bs-toggle="tab" data-bs-target="#paula" type="button" role="tab">Paula</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tiago-tab" data-bs-toggle="tab" data-bs-target="#tiago" type="button" role="tab">Tiago</button>
+              </li>
+            </ul>
+
+            <div class="tab-content p-3" id="serviceTabsContent">
+              <!-- Vittor Carvalho Services (ordenados alfabeticamente) -->
+              <div class="tab-pane fade show active" id="vittor" role="tabpanel">
+                <h5 class="mb-3">Vittor Carvalho</h5>
+                <div class="mb-4 professional-section" data-professional="Vittor Carvalho">
+                  <h6 class="text-muted">Hair & Styling</h6>
+                  <div class="list-group service-list">
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="30" data-professional="Vittor Carvalho">Alongamento de cílios clássicos - <span class="editable-price">€30</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="40" data-professional="Vittor Carvalho">Botox capilar médio - <span class="editable-price">€40</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="20" data-professional="Vittor Carvalho">Brushing cabelos curtos - <span class="editable-price">€20</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="25" data-professional="Vittor Carvalho">Brushing cabelos médios - <span class="editable-price">€25</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="30" data-professional="Vittor Carvalho">Brushing cabelos longos - <span class="editable-price">€30</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="35" data-professional="Vittor Carvalho">Brushing cabelos muito longos - <span class="editable-price">€35</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="15" data-professional="Vittor Carvalho">Corte de cabelo masculino (Básico) - <span class="editable-price">€15</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="25" data-professional="Vittor Carvalho">Corte de cabelo feminino - <span class="editable-price">€25</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="40" data-professional="Vittor Carvalho">Coloração de cabelo - <span class="editable-price">€40</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="80" data-professional="Vittor Carvalho">Extensão de cabelo - <span class="editable-price">€80</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="25" data-professional="Vittor Carvalho">Hidratação capilar - <span class="editable-price">€25</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="45" data-professional="Vittor Carvalho">Madeixas - <span class="editable-price">€45</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="35" data-professional="Vittor Carvalho">Manutenção de extensão de cabelos - <span class="editable-price">€35</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="30" data-professional="Vittor Carvalho">Manutenção de mega hair - <span class="editable-price">€30</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="25" data-professional="Vittor Carvalho">Maquilhagem Dia - <span class="editable-price">€25</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="35" data-professional="Vittor Carvalho">Maquilhagem Noite - <span class="editable-price">€35</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="50" data-professional="Vittor Carvalho">Progressiva capilar - <span class="editable-price">€50</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="10" data-professional="Vittor Carvalho">Designer de sobrancelhas - <span class="editable-price">€10</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="12" data-professional="Vittor Carvalho">Sobrancelhas + henna - <span class="editable-price">€12</span></a>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Paula Coelho Services (ordenados alfabeticamente) -->
+              <div class="tab-pane fade" id="paula" role="tabpanel">
+                <h5 class="mb-3">Paula Coelho</h5>
+                <div class="mb-4 professional-section" data-professional="Paula Coelho">
+                  <h6 class="text-muted">Acupuntura</h6>
+                  <div class="list-group service-list">
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="40" data-professional="Paula Coelho">Acupuntura - <span class="editable-price">€40</span></a>
+                  </div>
+                </div>
+                <div class="mb-4 professional-section" data-professional="Paula Coelho">
+                  <h6 class="text-muted">Depilação Cera</h6>
+                  <div class="list-group service-list">
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="7" data-professional="Paula Coelho">Depilação buço - <span class="editable-price">€7</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="15" data-professional="Paula Coelho">Depilação meia Virilha - <span class="editable-price">€15</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="20" data-professional="Paula Coelho">Depilação meia perna - <span class="editable-price">€20</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="30" data-professional="Paula Coelho">Depilação de pernas - <span class="editable-price">€30</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="8" data-professional="Paula Coelho">Depilação queixo - <span class="editable-price">€8</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="10" data-professional="Paula Coelho">Depilação axilas - <span class="editable-price">€10</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="25" data-professional="Paula Coelho">Depilação Virilha total - <span class="editable-price">€25</span></a>
+                  </div>
+                </div>
+                <div class="mb-4 professional-section" data-professional="Paula Coelho">
+                  <h6 class="text-muted">Limpeza de pele</h6>
+                  <div class="list-group service-list">
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="35" data-professional="Paula Coelho">Limpeza de pele facial - <span class="editable-price">€35</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="40" data-professional="Paula Coelho">Limpeza de pele no peito - <span class="editable-price">€40</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="45" data-professional="Paula Coelho">Limpeza de pele nas costas - <span class="editable-price">€45</span></a>
+                  </div>
+                </div>
+                <div class="mb-4 professional-section" data-professional="Paula Coelho">
+                  <h6 class="text-muted">Massagem</h6>
+                  <div class="list-group service-list">
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="10" data-professional="Paula Coelho">Avaliação obrigatória - <span class="editable-price">€10</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="40" data-professional="Paula Coelho">Drenagem linfática - <span class="editable-price">€40</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="55" data-professional="Paula Coelho">Massagem modeladora - <span class="editable-price">€55</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="45" data-professional="Paula Coelho">Massagem relaxante - <span class="editable-price">€45</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="50" data-professional="Paula Coelho">Massagem terapêutica (pré avaliação obrigatória) - <span class="editable-price">€50</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="35" data-professional="Paula Coelho">Ventosa Terapia - <span class="editable-price">€35</span></a>
+                  </div>
+                </div>
+                <div class="mb-4 professional-section" data-professional="Paula Coelho">
+                  <h6 class="text-muted">Tratamento a laser</h6>
+                  <div class="list-group service-list">
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="45" data-professional="Paula Coelho">Tratamento a laser para dores articulares - <span class="editable-price">€45</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="60" data-professional="Paula Coelho">Tratamento a laser de fungo nas unhas - <span class="editable-price">€60</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="50" data-professional="Paula Coelho">Remoção de sinais - <span class="editable-price">€50</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="55" data-professional="Paula Coelho">Remoção de verrugas - <span class="editable-price">€55</span></a>
+                  </div>
+                </div>
+                <div class="mb-4 professional-section" data-professional="Paula Coelho">
+                  <h6 class="text-muted">Unhas</h6>
+                  <div class="list-group service-list">
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="10" data-professional="Paula Coelho">Esmaltação Normal - <span class="editable-price">€10</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="20" data-professional="Paula Coelho">Gelinho manicure - <span class="editable-price">€20</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="25" data-professional="Paula Coelho">Gelinho pés - <span class="editable-price">€25</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="12" data-professional="Paula Coelho">Manicure - <span class="editable-price">€12</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="15" data-professional="Paula Coelho">Manutenção em gel - <span class="editable-price">€15</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="15" data-professional="Paula Coelho">Pedicure - <span class="editable-price">€15</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="25" data-professional="Paula Coelho">Unha de gel - <span class="editable-price">€25</span></a>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tiago Martins Services (ordenados alfabeticamente) -->
+              <div class="tab-pane fade" id="tiago" role="tabpanel">
+                <h5 class="mb-3">Tiago Martins</h5>
+                <div class="mb-4 professional-section" data-professional="Tiago Martins">
+                  <h6 class="text-muted">Unhas</h6>
+                  <div class="list-group service-list">
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="10" data-professional="Tiago Martins">Esmaltação Normal - <span class="editable-price">€10</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="20" data-professional="Tiago Martins">Gelinho manicure - <span class="editable-price">€20</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="25" data-professional="Tiago Martins">Gelinho pés - <span class="editable-price">€25</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="12" data-professional="Tiago Martins">Manicure - <span class="editable-price">€12</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="15" data-professional="Tiago Martins">Manutenção em gel - <span class="editable-price">€15</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="15" data-professional="Tiago Martins">Pedicure - <span class="editable-price">€15</span></a>
+                    <a href="#" class="list-group-item list-group-item-action service-item" data-price="25" data-professional="Tiago Martins">Unha de gel - <span class="editable-price">€25</span></a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Painel de Registro de Venda -->
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-header">
+            <i class="fas fa-cash-register me-2"></i>Registrar Venda
+          </div>
+          <div class="card-body">
+            <div id="selectedServices">
+              <p class="text-muted">Nenhum serviço selecionado</p>
+            </div>
+
+            <div class="mb-3">
+              <label for="clientName" class="form-label">Nome do Cliente</label>
+              <input type="text" class="form-control" id="clientName" placeholder="Nome completo">
+            </div>
+
+            <div class="mb-3">
+              <label for="clientPhone" class="form-label">Telefone/Contacto</label>
+              <div class="client-phone-group">
+                <select class="form-select country-code-select" id="countryCode">
+                  <option value="+351">🇵🇹 +351</option>
+                  <option value="+55">🇧🇷 +55</option>
+                  <option value="+34">🇪🇸 +34</option>
+                  <option value="+33">🇫🇷 +33</option>
+                  <option value="+49">🇩🇪 +49</option>
+                  <option value="+39">🇮🇹 +39</option>
+                  <option value="+44">🇬🇧 +44</option>
+                  <option value="+1">🇺🇸 +1</option>
+                  <option value="other">Outro</option>
+                </select>
+                <input type="text" class="form-control" id="clientPhone" placeholder="Número de telefone">
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="clientBirthday" class="form-label">Data de Nascimento</label>
+              <input type="date" class="form-control" id="clientBirthday">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Forma de Pagamento</label>
+              <select class="form-select" id="paymentMethod">
+                <option selected value="">Selecione a forma de pagamento</option>
+                <option value="Dinheiro">Dinheiro</option>
+                <option value="Cartão de Débito">Cartão de Débito</option>
+                <option value="Cartão de Crédito">Cartão de Crédito</option>
+                <option value="MB Way">MB Way</option>
+                <option value="Transferência Bancária">Transferência Bancária</option>
+              </select>
+            </div>
+
+            <div id="cashFields" class="mb-3 hidden">
+              <div class="row">
+                <div class="col-md-6">
+                  <label for="amountReceived" class="form-label">Valor Recebido (€)</label>
+                  <input type="number" class="form-control" id="amountReceived" step="0.01" min="0">
+                </div>
+                <div class="col-md-6">
+                  <label for="changeAmount" class="form-label">Troco (€)</label>
+                  <input type="number" class="form-control" id="changeAmount" step="0.01" min="0" readonly>
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5>Total: <span id="totalAmount">€0.00</span></h5>
+            </div>
+
+            <button id="registerSale" class="btn btn-primary w-100">
+              <i class="fas fa-save me-2"></i>Registrar Venda
+            </button>
+
+            <button id="clearSelection" class="btn btn-outline-secondary w-100 mt-2">
+              <i class="fas fa-trash-alt me-2"></i>Limpar Seleção
+            </button>
+          </div>
+        </div>
+
+        <!-- Resumo do Dia -->
+        <div class="card mt-4">
+          <div class="card-header">
+            <i class="fas fa-calendar-day me-2"></i>Resumo
+          </div>
+          <div class="card-body">
+            <div id="dailySummary">
+              <p class="text-muted">Nenhuma venda registrada hoje</p>
+            </div>
+
+            <div class="d-grid gap-2 mt-3">
+              <button id="closeDay" class="btn btn-secondary">
+                <i class="fas fa-lock me-2"></i>Fechar Caixa Diário
+              </button>
+              <button id="dailyReport" class="btn btn-primary">
+                <i class="fas fa-file-alt me-2"></i>Relatório Diário
+              </button>
+              <button id="weeklyReport" class="btn btn-info">
+                <i class="fas fa-file-alt me-2"></i>Relatório Semanal
+              </button>
+              <button id="monthlyReport" class="btn btn-warning">
+                <i class="fas fa-file-alt me-2"></i>Relatório Mensal
+              </button>
+              <button id="annualReport" class="btn btn-danger">
+                <i class="fas fa-file-alt me-2"></i>Relatório Anual
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Relatórios -->
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-header">
+            <i class="fas fa-file-invoice me-2"></i>Relatórios
+          </div>
+          <div class="card-body">
+            <div id="reportContent">
+              <div class="alert alert-info">
+                Selecione um dos botões de relatório para gerar informações.
+              </div>
+            </div>
+
+            <div class="d-grid gap-2 mt-3 no-print">
+              <button id="printReport" class="btn btn-primary">
+                <i class="fas fa-print me-2"></i>Imprimir Relatório
+              </button>
+              <button id="sendWhatsApp" class="btn btn-whatsapp">
+                <i class="fab fa-whatsapp me-2"></i>Enviar WhatsApp
+              </button>
+              <button id="savePdf" class="btn btn-save-pdf">
+                <i class="fas fa-file-pdf me-2"></i>Salvar PDF Local
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Seção de Antecipação -->
+    <div class="card mb-4" id="advanceSection">
+      <div class="card-header">
+        <i class="fas fa-hand-holding-usd me-2"></i>Valor Antecipado
+      </div>
+      <div class="card-body">
+        <div class="advance-section">
+          <div class="row">
+            <div class="col-md-4">
+              <label for="advanceProfessional" class="form-label">Profissional</label>
+              <select class="form-select" id="advanceProfessional">
+                <option value="">Selecione o profissional</option>
+                <option value="Vittor Carvalho">Vittor Carvalho</option>
+                <option value="Paula Coelho">Paula Coelho</option>
+                <option value="Tiago Martins">Tiago Martins</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label for="advanceAmount" class="form-label">Valor (€)</label>
+              <input type="number" class="form-control" id="advanceAmount" step="0.01" min="0">
+            </div>
+            <div class="col-md-4">
+              <label for="advanceReason" class="form-label">Motivo</label>
+              <input type="text" class="form-control" id="advanceReason" placeholder="Descrição do motivo">
+            </div>
+          </div>
+          <button id="registerAdvanceBtn" class="btn btn-secondary mt-3">Validar Antecipação</button>
+        </div>
+
+        <div class="mt-3">
+          <h5>Histórico de Antecipações</h5>
+          <div id="advancesList">
+            <p class="text-muted">Nenhuma antecipação registrada</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Seção de Contatos -->
+    <div class="card mb-4" id="contactsSection">
+      <div class="card-header">
+        <i class="fas fa-address-book me-2"></i>Lista de Contatos
+      </div>
+      <div class="card-body">
+        <div class="contacts-search">
+          <div class="input-group">
+            <input type="text" class="form-control" id="contactsSearch" placeholder="Pesquisar por nome ou telefone">
+            <button class="btn btn-outline-secondary" type="button" id="clearContactsSearch">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+        <div class="mb-3">
+          <button id="addContactBtn" class="btn btn-primary add-contact-btn">
+            <i class="fas fa-plus me-2"></i>Adicionar Contato
+          </button>
+          <button id="saveContactsPdf" class="btn btn-save-pdf">
+            <i class="fas fa-file-pdf me-2"></i>Salvar Lista em PDF
+          </button>
+        </div>
+        <div class="contacts-list">
+          <div id="contactsList">
+            <!-- Lista de contatos será gerada dinamicamente -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Seção de Aniversários -->
+    <div class="card mb-4" id="birthdaySection">
+      <div class="card-header">
+        <i class="fas fa-birthday-cake me-2"></i>Aniversários Próximos
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label for="birthdayClientName" class="form-label">Nome do Cliente</label>
+              <input type="text" class="form-control" id="birthdayClientName" placeholder="Nome completo">
+            </div>
+            <div class="mb-3">
+              <label for="birthdayClientPhone" class="form-label">Telefone/Contacto</label>
+              <div class="client-phone-group">
+                <select class="form-select country-code-select" id="birthdayCountryCode">
+                  <option value="+351">🇵🇹 +351</option>
+                  <option value="+55">🇧🇷 +55</option>
+                  <option value="+34">🇪🇸 +34</option>
+                  <option value="+33">🇫🇷 +33</option>
+                  <option value="+49">🇩🇪 +49</option>
+                  <option value="+39">🇮🇹 +39</option>
+                  <option value="+44">🇬🇧 +44</option>
+                  <option value="+1">🇺🇸 +1</option>
+                  <option value="other">Outro</option>
+                </select>
+                <input type="text" class="form-control" id="birthdayClientPhone" placeholder="Número de telefone">
+              </div>
+            </div>
+            <button id="sendBirthdayWishes" class="btn btn-whatsapp w-100">
+              <i class="fab fa-whatsapp me-2"></i>Enviar Mensagem de Aniversário
+            </button>
+          </div>
+          <div class="col-md-6">
+            <h5>Clientes com aniversário próximo</h5>
+            <div class="birthday-list">
+              <div class="list-group" id="birthdayItemsList">
+                <!-- Itens de aniversário serão adicionados dinamicamente -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Template oculto para PDF -->
+  <div id="pdfTemplate" class="pdf-only">
+    <div class="pdf-header">
+      <img src="https://studiodevitto.com/wp-content/uploads/2025/07/Logo-Studio-DeVitto.png" class="pdf-logo">
+      <div class="pdf-title">
+        <h2>Studio DeVitto</h2>
+        <h3 class="report-title"></h3>
+        <p class="report-date"></p>
+      </div>
+    </div>
+    <div class="pdf-content"></div>
+    <div class="pdf-footer">
+      <p>Relatório gerado em: <span class="generation-date"></span></p>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Elementos de login
+  const loginScreen = document.getElementById('loginScreen');
+  const mainContent = document.getElementById('mainContent');
+  const loginForm = document.getElementById('loginForm');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const togglePassword = document.getElementById('togglePassword');
+  const passwordInput = document.getElementById('password');
+
+  // Credenciais válidas (em um sistema real, isso seria verificado no servidor)
+  const validCredentials = {
+    username: 'admin',
+    password: 'studio123'
+  };
+
+  // Verificar se o usuário já está logado
+  if (localStorage.getItem('isLoggedIn') === 'true') {
+    loginScreen.style.display = 'none';
+    mainContent.style.display = 'block';
+  }
+
+  // Evento de login
+  loginForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+
+    // Verificação simples (em produção, use autenticação segura)
+    if (username === validCredentials.username && password === validCredentials.password) {
+      // Login bem-sucedido
+      localStorage.setItem('isLoggedIn', 'true');
+      loginScreen.style.display = 'none';
+      mainContent.style.display = 'block';
+    } else {
+      alert('Usuário ou senha incorretos. Tente novamente.');
+    }
+  });
+
+  // Evento de logout
+  logoutBtn.addEventListener('click', function() {
+    localStorage.removeItem('isLoggedIn');
+    loginScreen.style.display = 'flex';
+    mainContent.style.display = 'none';
+    document.getElementById('username').value = '';
+    document.getElementById('password').value = '';
+  });
+
+  // Mostrar/ocultar senha
+  togglePassword.addEventListener('click', function() {
+    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+    passwordInput.setAttribute('type', type);
+    this.classList.toggle('fa-eye');
+    this.classList.toggle('fa-eye-slash');
+  });
+
+  // Variáveis globais
+  let selectedServices = [];
+  let dailySales = JSON.parse(localStorage.getItem('dailySales')) || [];
+  let salesHistory = JSON.parse(localStorage.getItem('salesHistory')) || [];
+  let cashRegister = JSON.parse(localStorage.getItem('cashRegister')) || {
+    isOpen: false,
+    initialAmount: 0,
+    currentBalance: 0,
+    advances: []
+  };
+  let clientContacts = JSON.parse(localStorage.getItem('clientContacts')) || [];
+  let clientBirthdays = JSON.parse(localStorage.getItem('clientBirthdays')) || [];
+  let currentEditingContact = null;
+
+  // Elementos DOM
+  const selectedServicesEl = document.getElementById('selectedServices');
+  const totalAmountEl = document.getElementById('totalAmount');
+  const registerSaleBtn = document.getElementById('registerSale');
+  const clearSelectionBtn = document.getElementById('clearSelection');
+  const dailySummaryEl = document.getElementById('dailySummary');
+  const closeDayBtn = document.getElementById('closeDay');
+  const dailyReportBtn = document.getElementById('dailyReport');
+  const weeklyReportBtn = document.getElementById('weeklyReport');
+  const monthlyReportBtn = document.getElementById('monthlyReport');
+  const annualReportBtn = document.getElementById('annualReport');
+  const reportContentEl = document.getElementById('reportContent');
+  const printReportBtn = document.getElementById('printReport');
+  const sendWhatsAppBtn = document.getElementById('sendWhatsApp');
+  const savePdfBtn = document.getElementById('savePdf');
+  const paymentMethodEl = document.getElementById('paymentMethod');
+  const cashFieldsEl = document.getElementById('cashFields');
+  const amountReceivedEl = document.getElementById('amountReceived');
+  const changeAmountEl = document.getElementById('changeAmount');
+  const clientNameEl = document.getElementById('clientName');
+  const clientPhoneEl = document.getElementById('clientPhone');
+  const clientBirthdayEl = document.getElementById('clientBirthday');
+  const countryCodeEl = document.getElementById('countryCode');
+
+  // Elementos de abertura de caixa
+  const openCashSection = document.getElementById('openCashSection');
+  const openCashBtn = document.getElementById('openCashBtn');
+  const initialAmountEl = document.getElementById('initialAmount');
+  const displayInitialAmount = document.getElementById('displayInitialAmount');
+  const displaySalesTotal = document.getElementById('displaySalesTotal');
+  const displayAdvancesTotal = document.getElementById('displayAdvancesTotal');
+  const displayCurrentBalance = document.getElementById('displayCurrentBalance');
+
+  // Elementos de antecipação
+  const advanceSection = document.getElementById('advanceSection');
+  const advanceProfessionalEl = document.getElementById('advanceProfessional');
+  const advanceAmountEl = document.getElementById('advanceAmount');
+  const advanceReasonEl = document.getElementById('advanceReason');
+  const registerAdvanceBtn = document.getElementById('registerAdvanceBtn');
+  const advancesListEl = document.getElementById('advancesList');
+
+  // Elementos para aniversários
+  const birthdaySection = document.getElementById('birthdaySection');
+  const birthdayClientNameEl = document.getElementById('birthdayClientName');
+  const birthdayClientPhoneEl = document.getElementById('birthdayClientPhone');
+  const birthdayCountryCodeEl = document.getElementById('birthdayCountryCode');
+  const sendBirthdayWishesBtn = document.getElementById('sendBirthdayWishes');
+  const birthdayItemsList = document.getElementById('birthdayItemsList');
+
+  // Elementos para contatos
+  const contactsSection = document.getElementById('contactsSection');
+  const contactsSearchEl = document.getElementById('contactsSearch');
+  const clearContactsSearchBtn = document.getElementById('clearContactsSearch');
+  const contactsListEl = document.getElementById('contactsList');
+  const saveContactsPdfBtn = document.getElementById('saveContactsPdf');
+  const addContactBtn = document.getElementById('addContactBtn');
+
+  // Elementos para serviços extras
+  const extraServiceNameEl = document.getElementById('extraServiceName');
+  const extraServicePriceEl = document.getElementById('extraServicePrice');
+  const extraServiceProfessionalEl = document.getElementById('extraServiceProfessional');
+  const addExtraServiceBtn = document.getElementById('addExtraServiceBtn');
+
+  // Elementos para pesquisa de serviços
+  const serviceSearchEl = document.getElementById('serviceSearch');
+  const clearServiceSearchBtn = document.getElementById('clearServiceSearch');
+
+  // Elementos para menu flutuante de aniversário
+  const birthdayFloatingBtn = document.getElementById('birthdayFloatingBtn');
+  const birthdayFloatingMenu = document.getElementById('birthdayFloatingMenu');
+  const birthdayFloatingClose = document.getElementById('birthdayFloatingClose');
+  const birthdayFloatingList = document.getElementById('birthdayFloatingList');
+  const birthdayBadge = document.getElementById('birthdayBadge');
+
+  // Elementos do modal de edição de contato
+  const editContactModal = document.getElementById('editContactModal');
+  const closeEditContactModal = document.getElementById('closeEditContactModal');
+  const cancelEditContact = document.getElementById('cancelEditContact');
+  const saveContactChanges = document.getElementById('saveContactChanges');
+  const editContactName = document.getElementById('editContactName');
+  const editContactPhone = document.getElementById('editContactPhone');
+  const editCountryCode = document.getElementById('editCountryCode');
+  const editContactBirthday = document.getElementById('editContactBirthday');
+
+  // Inicialização
+  updateSelectedServicesDisplay();
+  updateDailySummary();
+  updateCashRegisterDisplay();
+  updateAdvancesList();
+  updateContactsList();
+  checkUpcomingBirthdays();
+
+  // Mostrar/ocultar seções conforme estado do caixa
+  if (cashRegister.isOpen) {
+    openCashSection.classList.add('hidden');
+    advanceSection.classList.remove('hidden');
+  } else {
+    openCashSection.classList.remove('hidden');
+    advanceSection.classList.add('hidden');
+  }
+
+  // Event Listeners
+  document.querySelectorAll('.service-item').forEach(item => {
+    item.addEventListener('click', function(e) {
+      e.preventDefault();
+      toggleServiceSelection(this);
+    });
+  });
+
+  // Permitir edição de preços
+  document.querySelectorAll('.editable-price').forEach(priceEl => {
+    priceEl.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const currentPrice = this.textContent.replace('€', '');
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.value = currentPrice;
+      input.step = '0.01';
+      input.min = '0';
+      input.classList.add('form-control', 'form-control-sm');
+      input.style.width = '60px';
+      input.style.display = 'inline-block';
+
+      this.innerHTML = '';
+      this.appendChild(input);
+      input.focus();
+
+      const savePrice = () => {
+        const newPrice = parseFloat(input.value) || 0;
+        this.textContent = '€' + newPrice.toFixed(2);
+        const parentItem = this.closest('.service-item');
+        parentItem.dataset.price = newPrice;
+
+        // Atualizar preço em serviços já selecionados
+        const serviceName = parentItem.textContent.split(' - ')[0].trim();
+        const professional = parentItem.dataset.professional;
+
+        selectedServices.forEach(service => {
+          if (service.name === serviceName && service.professional === professional) {
+            service.price = newPrice;
+          }
+        });
+
+        updateSelectedServicesDisplay();
+      };
+
+      input.addEventListener('blur', savePrice);
+      input.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          savePrice();
+        }
+      });
+    });
+  });
+
+  registerSaleBtn.addEventListener('click', registerSale);
+  clearSelectionBtn.addEventListener('click', clearSelection);
+  closeDayBtn.addEventListener('click', closeDay);
+  dailyReportBtn.addEventListener('click', generateDailyReport);
+  weeklyReportBtn.addEventListener('click', generateWeeklyReport);
+  monthlyReportBtn.addEventListener('click', generateMonthlyReport);
+  annualReportBtn.addEventListener('click', generateAnnualReport);
+  printReportBtn.addEventListener('click', printReport);
+  sendWhatsAppBtn.addEventListener('click', sendWhatsApp);
+  savePdfBtn.addEventListener('click', savePdfLocally);
+
+  paymentMethodEl.addEventListener('change', function() {
+    if (this.value === 'Dinheiro') {
+      cashFieldsEl.classList.remove('hidden');
+      amountReceivedEl.value = '';
+      changeAmountEl.value = '';
+    } else {
+      cashFieldsEl.classList.add('hidden');
+    }
+  });
+
+  amountReceivedEl.addEventListener('input', calculateChange);
+
+  // Abertura de caixa
+  openCashBtn.addEventListener('click', function() {
+    const initialAmount = parseFloat(initialAmountEl.value) || 0;
+
+    cashRegister = {
+      isOpen: true,
+      initialAmount: initialAmount,
+      currentBalance: initialAmount,
+      advances: []
+    };
+
+    localStorage.setItem('cashRegister', JSON.stringify(cashRegister));
+
+    openCashSection.classList.add('hidden');
+    advanceSection.classList.remove('hidden');
+    updateCashRegisterDisplay();
+
+    alert('Caixa aberto com sucesso com €' + initialAmount.toFixed(2));
+  });
+
+  // Registrar antecipação
+  registerAdvanceBtn.addEventListener('click', function() {
+    const professional = advanceProfessionalEl.value;
+    const amount = parseFloat(advanceAmountEl.value) || 0;
+    const reason = advanceReasonEl.value.trim();
+
+    if (!professional) {
+      alert('Por favor, selecione o profissional.');
+      return;
+    }
+
+    if (amount <= 0) {
+      alert('Por favor, informe um valor válido para a antecipação.');
+      return;
+    }
+
+    if (!reason) {
+      alert('Por favor, informe o motivo da antecipação.');
+      return;
+    }
+
+    if (amount > cashRegister.currentBalance) {
+      alert('Saldo insuficiente no caixa para esta antecipação.');
+      return;
+    }
+
+    const advance = {
+      id: Date.now(),
+      date: new Date().toISOString(),
+      professional: professional,
+      amount: amount,
+      reason: reason
+    };
+
+    cashRegister.advances.push(advance);
+    cashRegister.currentBalance -= amount;
+
+    localStorage.setItem('cashRegister', JSON.stringify(cashRegister));
+
+    advanceProfessionalEl.value = '';
+    advanceAmountEl.value = '';
+    advanceReasonEl.value = '';
+
+    updateCashRegisterDisplay();
+    updateAdvancesList();
+    updateDailySummary();
+
+    alert(`Antecipação de €${amount.toFixed(2)} registrada para ${professional}`);
+  });
+
+  // Enviar mensagem de aniversário
+  sendBirthdayWishesBtn.addEventListener('click', function() {
+    const clientName = birthdayClientNameEl.value.trim();
+    const clientPhone = birthdayClientPhoneEl.value.trim();
+    const countryCode = birthdayCountryCodeEl.value;
+
+    if (!clientName) {
+      alert('Por favor, informe o nome do cliente.');
+      return;
+    }
+
+    if (!clientPhone) {
+      alert('Por favor, informe o telefone do cliente.');
+      return;
+    }
+
+    // Mensagem de aniversário personalizada
+    const message = `🎉 *Feliz Aniversário, ${clientName}!* 🎉\n\n` +
+      `Nós do Studio DeVitto desejamos a você um dia maravilhoso cheio de alegria e felicidade!\n\n` +
+      `Como presente especial, você ganhou uma *hidratação capilar* para aproveitar no seu próximo agendamento!\n\n` +
+      `Entre em contato conosco para agendar seu horário.\n\n` +
+      `Com carinho,\nEquipe Studio DeVitto 💖`;
+
+    // Codificar a mensagem para URL
+    const encodedMessage = encodeURIComponent(message);
+
+    // Criar o link do WhatsApp
+    const whatsappUrl = `https://wa.me/${countryCode + clientPhone}?text=${encodedMessage}`;
+
+    // Abrir em uma nova janela
+    window.open(whatsappUrl, '_blank');
+
+    // Limpar campos
+    birthdayClientNameEl.value = '';
+    birthdayClientPhoneEl.value = '';
+    birthdayCountryCodeEl.value = '+351';
+  });
+
+  // Preencher dados de aniversariante ao clicar na lista
+  document.querySelectorAll('.birthday-item').forEach(item => {
+    item.addEventListener('click', function(e) {
+      e.preventDefault();
+      const name = this.dataset.name;
+      const phone = this.dataset.phone;
+
+      birthdayClientNameEl.value = name;
+      birthdayClientPhoneEl.value = phone;
+    });
+  });
+
+  // Pesquisar contatos
+  contactsSearchEl.addEventListener('input', function() {
+    updateContactsList();
+  });
+
+  // Limpar pesquisa de contatos
+  clearContactsSearchBtn.addEventListener('click', function() {
+    contactsSearchEl.value = '';
+    updateContactsList();
+  });
+
+  // Salvar lista de contatos em PDF
+  saveContactsPdfBtn.addEventListener('click', function() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // Configurações
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 15;
+    const maxWidth = pageWidth - 2 * margin;
+
+    // Adicionar cabeçalho
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(38, 25, 107); // #26196b
+    doc.text('Studio DeVitto - Lista de Contatos', margin, 20);
+
+    doc.setFontSize(12);
+    doc.setTextColor(100);
+    doc.text(`Gerado em: ${new Date().toLocaleDateString()}`, margin, 28);
+
+    // Adicionar linha divisória
+    doc.setDrawColor(38, 25, 107);
+    doc.setLineWidth(0.5);
+    doc.line(margin, 35, pageWidth - margin, 35);
+
+    // Preparar dados da tabela
+    const headers = ['Nome', 'Telefone', 'Última Visita', 'Aniversário'];
+    const rows = [];
+
+    // Ordenar contatos alfabeticamente
+    const sortedContacts = [...clientContacts].sort((a, b) => a.name.localeCompare(b.name));
+
+    sortedContacts.forEach(contact => {
+      const lastVisit = contact.lastVisit ? new Date(contact.lastVisit).toLocaleDateString() : 'N/A';
+      const birthday = contact.birthday ? new Date(contact.birthday).toLocaleDateString() : 'N/A';
+      rows.push([contact.name, contact.phone, lastVisit, birthday]);
+    });
+
+    // Adicionar tabela
+    doc.autoTable({
+      startY: 40,
+      head: [headers],
+      body: rows,
+      margin: { left: margin, right: margin },
+      headStyles: {
+        fillColor: [38, 25, 107], // #26196b
+        textColor: 255,
+        fontStyle: 'bold'
+      },
+      alternateRowStyles: {
+        fillColor: [245, 245, 245]
+      }
+    });
+
+    // Salvar o PDF
+    doc.save(`Contatos_Studio_DeVitto_${new Date().toISOString().slice(0, 10)}.pdf`);
+  });
+
+  // Adicionar serviço extra
+  addExtraServiceBtn.addEventListener('click', function() {
+    const serviceName = extraServiceNameEl.value.trim();
+    const servicePrice = parseFloat(extraServicePriceEl.value) || 0;
+    const professional = extraServiceProfessionalEl.value;
+
+    if (!serviceName) {
+      alert('Por favor, informe o nome do serviço extra.');
+      return;
+    }
+
+    if (servicePrice <= 0) {
+      alert('Por favor, informe um valor válido para o serviço extra.');
+      return;
+    }
+
+    if (!professional) {
+      alert('Por favor, selecione o profissional.');
+      return;
+    }
+
+    // Adicionar serviço à lista de selecionados
+    selectedServices.push({
+      name: serviceName,
+      price: servicePrice,
+      professional: professional
+    });
+
+    // Atualizar exibição
+    updateSelectedServicesDisplay();
+
+    // Limpar campos
+    extraServiceNameEl.value = '';
+    extraServicePriceEl.value = '';
+    extraServiceProfessionalEl.value = 'Vittor Carvalho';
+
+    // Rolagem suave para a seção de serviços selecionados
+    document.getElementById('selectedServices').scrollIntoView({ behavior: 'smooth' });
+  });
+
+  // Pesquisa de serviços
+  serviceSearchEl.addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase();
+
+    document.querySelectorAll('.service-item').forEach(item => {
+      const serviceText = item.textContent.toLowerCase();
+      if (serviceText.includes(searchTerm)) {
+        item.style.display = 'block';
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  });
+
+  // Limpar pesquisa de serviços
+  clearServiceSearchBtn.addEventListener('click', function() {
+    serviceSearchEl.value = '';
+    document.querySelectorAll('.service-item').forEach(item => {
+      item.style.display = 'block';
+    });
+  });
+
+  // Menu flutuante de aniversário
+  birthdayFloatingBtn.addEventListener('click', function() {
+    birthdayFloatingMenu.style.display = birthdayFloatingMenu.style.display === 'block' ? 'none' : 'block';
+  });
+
+  birthdayFloatingClose.addEventListener('click', function() {
+    birthdayFloatingMenu.style.display = 'none';
+  });
+
+  // Modal de edição de contato
+  function openEditContactModal(contact) {
+    currentEditingContact = contact;
+    
+    editContactName.value = contact.name;
+    
+    // Extrair código do país e número
+    const phoneParts = contact.phone.match(/^(\+\d+)(\d+)$/);
+    
+    if (phoneParts && phoneParts.length === 3) {
+      editCountryCode.value = phoneParts[1];
+      editContactPhone.value = phoneParts[2];
+    } else {
+      editCountryCode.value = '+351';
+      editContactPhone.value = contact.phone;
+    }
+    
+    editContactBirthday.value = contact.birthday || '';
+    
+    editContactModal.classList.add('active');
+  }
+
+  closeEditContactModal.addEventListener('click', function() {
+    editContactModal.classList.remove('active');
+  });
+
+  cancelEditContact.addEventListener('click', function() {
+    editContactModal.classList.remove('active');
+  });
+
+  saveContactChanges.addEventListener('click', function() {
+    const name = editContactName.value.trim();
+    const phone = editCountryCode.value + editContactPhone.value.trim();
+    const birthday = editContactBirthday.value;
+
+    if (!name) {
+      alert('Por favor, informe o nome do cliente.');
+      return;
+    }
+
+    if (!phone) {
+      alert('Por favor, informe o telefone do cliente.');
+      return;
+    }
+
+    // Atualizar contato existente
+    if (currentEditingContact) {
+      currentEditingContact.name = name;
+      currentEditingContact.phone = phone;
+      currentEditingContact.birthday = birthday;
+    } else {
+      // Adicionar novo contato
+      clientContacts.push({
+        name: name,
+        phone: phone,
+        birthday: birthday,
+        lastVisit: null
+      });
+    }
+
+    localStorage.setItem('clientContacts', JSON.stringify(clientContacts));
+    updateContactsList();
+    checkUpcomingBirthdays();
+    editContactModal.classList.remove('active');
+    currentEditingContact = null;
+  });
+
+  // Botão para adicionar novo contato
+  addContactBtn.addEventListener('click', function() {
+    currentEditingContact = null;
+    editContactName.value = '';
+    editContactPhone.value = '';
+    editCountryCode.value = '+351';
+    editContactBirthday.value = '';
+    editContactModal.classList.add('active');
+  });
+
+  // Funções
+  function toggleServiceSelection(serviceEl) {
+    const serviceText = serviceEl.textContent.split(' - ')[0].trim();
+    const servicePrice = parseFloat(serviceEl.dataset.price);
+    const professional = serviceEl.dataset.professional;
+
+    const serviceIndex = selectedServices.findIndex(
+      s => s.name === serviceText && s.professional === professional
+    );
+
+    if (serviceIndex === -1) {
+      // Adicionar serviço
+      selectedServices.push({
+        name: serviceText,
+        price: servicePrice,
+        professional: professional
+      });
+      serviceEl.classList.add('selected');
+    } else {
+      // Remover serviço
+      selectedServices.splice(serviceIndex, 1);
+      serviceEl.classList.remove('selected');
+    }
+
+    updateSelectedServicesDisplay();
+  }
+
+  function updateSelectedServicesDisplay() {
+    if (selectedServices.length === 0) {
+      selectedServicesEl.innerHTML = '<p class="text-muted">Nenhum serviço selecionado</p>';
+      totalAmountEl.textContent = '€0.00';
+      return;
+    }
+
+    // Agrupar serviços por profissional
+    const servicesByProfessional = {};
+    selectedServices.forEach(service => {
+      if (!servicesByProfessional[service.professional]) {
+        servicesByProfessional[service.professional] = [];
+      }
+      servicesByProfessional[service.professional].push(service);
+    });
+
+    let html = '';
+    let total = 0;
+
+    for (const professional in servicesByProfessional) {
+      html += `<div class="mb-3"><strong>${professional}</strong><ul class="list-group list-group-flush mt-2">`;
+
+      let professionalSubtotal = 0;
+      servicesByProfessional[professional].forEach(service => {
+        html += `<li class="list-group-item d-flex justify-content-between align-items-center">
+          ${service.name}
+          <span class="badge bg-primary rounded-pill">€${service.price.toFixed(2)}</span>
+        </li>`;
+        professionalSubtotal += service.price;
+      });
+
+      html += `<li class="list-group-item d-flex justify-content-between align-items-center fw-bold">
+        Subtotal
+        <span class="badge bg-success rounded-pill">€${professionalSubtotal.toFixed(2)}</span>
+      </li>`;
+      html += '</ul></div>';
+
+      total += professionalSubtotal;
+    }
+
+    html += `<div class="d-flex justify-content-between align-items-center mt-3 p-2 bg-light rounded">
+      <h5 class="mb-0">Total Geral</h5>
+      <h5 class="mb-0">€${total.toFixed(2)}</h5>
+    </div>`;
+
+    selectedServicesEl.innerHTML = html;
+    totalAmountEl.textContent = `€${total.toFixed(2)}`;
+  }
+
+  function calculateChange() {
+    const total = getTotalAmount();
+    const received = parseFloat(amountReceivedEl.value) || 0;
+
+    if (received >= total) {
+      changeAmountEl.value = (received - total).toFixed(2);
+    } else {
+      changeAmountEl.value = '0.00';
+    }
+  }
+
+  function getTotalAmount() {
+    return selectedServices.reduce((sum, service) => sum + service.price, 0);
+  }
+
+  function registerSale() {
+    if (selectedServices.length === 0) {
+      alert('Por favor, selecione pelo menos um serviço.');
+      return;
+    }
+
+    if (!cashRegister.isOpen) {
+      alert('O caixa não está aberto. Por favor, abra o caixa antes de registrar vendas.');
+      return;
+    }
+
+    const clientName = clientNameEl.value.trim();
+    const clientPhone = clientPhoneEl.value.trim();
+    const clientBirthday = clientBirthdayEl.value;
+    const countryCode = countryCodeEl.value;
+    const paymentMethod = paymentMethodEl.value;
+
+    if (!clientName) {
+      alert('Por favor, informe o nome do cliente.');
+      return;
+    }
+
+    if (!paymentMethod) {
+      alert('Por favor, selecione a forma de pagamento.');
+      return;
+    }
+
+    if (paymentMethod === 'Dinheiro') {
+      const received = parseFloat(amountReceivedEl.value) || 0;
+      const total = getTotalAmount();
+
+      if (received < total) {
+        if (!confirm(`O valor recebido (€${received.toFixed(2)}) é menor que o total (€${total.toFixed(2)}). Deseja continuar mesmo assim?`)) {
+          return;
+        }
+      }
+    }
+
+    // Agrupar serviços por profissional para a venda
+    const servicesByProfessional = {};
+    selectedServices.forEach(service => {
+      if (!servicesByProfessional[service.professional]) {
+        servicesByProfessional[service.professional] = [];
+      }
+      servicesByProfessional[service.professional].push({
+        name: service.name,
+        price: service.price
+      });
+    });
+
+    // Criar entrada de venda para cada profissional
+    const now = new Date();
+    const saleDate = now.toISOString();
+
+    for (const professional in servicesByProfessional) {
+      const professionalServices = servicesByProfessional[professional];
+      const professionalTotal = professionalServices.reduce((sum, service) => sum + service.price, 0);
+
+      const saleRecord = {
+        id: Date.now() + Math.floor(Math.random() * 1000),
+        date: saleDate,
+        clientName: clientName,
+        clientPhone: countryCode + clientPhone,
+        clientBirthday: clientBirthday,
+        professional: professional,
+        services: professionalServices,
+        total: professionalTotal,
+        paymentMethod: paymentMethod,
+        amountReceived: paymentMethod === 'Dinheiro' ? parseFloat(amountReceivedEl.value) || 0 : professionalTotal,
+        change: paymentMethod === 'Dinheiro' ? parseFloat(changeAmountEl.value) || 0 : 0
+      };
+
+      dailySales.push(saleRecord);
+
+      // Atualizar saldo do caixa se for pagamento em dinheiro
+      if (paymentMethod === 'Dinheiro') {
+        cashRegister.currentBalance += professionalTotal;
+      }
+    }
+
+    // Salvar no localStorage
+    localStorage.setItem('dailySales', JSON.stringify(dailySales));
+    localStorage.setItem('cashRegister', JSON.stringify(cashRegister));
+
+    // Adicionar/atualizar contato do cliente
+    updateClientContact(clientName, countryCode + clientPhone, clientBirthday);
+
+    // Limpar formulário e seleção
+    clearSelection();
+    clientNameEl.value = '';
+    clientPhoneEl.value = '';
+    clientBirthdayEl.value = '';
+    countryCodeEl.value = '+351';
+    paymentMethodEl.value = '';
+    cashFieldsEl.classList.add('hidden');
+
+    // Atualizar exibições
+    updateCashRegisterDisplay();
+    updateDailySummary();
+    updateContactsList();
+    checkUpcomingBirthdays();
+
+    alert('Venda(s) registrada(s) com sucesso!');
+  }
+
+  function updateClientContact(name, phone, birthday) {
+  // Verificar se o contato já existe
+  const existingContactIndex = clientContacts.findIndex(
+    contact => contact.phone === phone
+  );
+
+  const now = new Date().toISOString();
+
+  if (existingContactIndex !== -1) {
+    // Atualizar contato existente
+    clientContacts[existingContactIndex].name = name;
+    clientContacts[existingContactIndex].lastVisit = now;
+    if (birthday) {
+      // Garantir que a data está no formato correto
+      const birthdayDate = new Date(birthday);
+      if (!isNaN(birthdayDate.getTime())) {
+        clientContacts[existingContactIndex].birthday = birthdayDate.toISOString().split('T')[0];
+      }
+    }
+  } else {
+    // Adicionar novo contato
+    const newContact = {
+      name: name,
+      phone: phone,
+      lastVisit: now
+    };
+    
+    if (birthday) {
+      const birthdayDate = new Date(birthday);
+      if (!isNaN(birthdayDate.getTime())) {
+        newContact.birthday = birthdayDate.toISOString().split('T')[0];
+      }
+    }
+    
+    clientContacts.push(newContact);
+  }
+
+  localStorage.setItem('clientContacts', JSON.stringify(clientContacts));
+}
+
+  function updateContactsList() {
+    const searchTerm = contactsSearchEl.value.toLowerCase();
+
+    // Filtrar contatos
+    let filteredContacts = [...clientContacts];
+
+    if (searchTerm) {
+      filteredContacts = clientContacts.filter(contact =>
+        contact.name.toLowerCase().includes(searchTerm) ||
+        contact.phone.includes(searchTerm)
+      );
+    }
+
+    // Ordenar contatos alfabeticamente
+    filteredContacts.sort((a, b) => a.name.localeCompare(b.name));
+
+    if (filteredContacts.length === 0) {
+      contactsListEl.innerHTML = '<p class="text-muted">Nenhum contato encontrado</p>';
+      return;
+    }
+
+    let html = '<div class="list-group">';
+
+    filteredContacts.forEach(contact => {
+      const lastVisit = contact.lastVisit ?
+        new Date(contact.lastVisit).toLocaleDateString() : 'Nunca visitou';
+      const birthday = contact.birthday ?
+        new Date(contact.birthday).toLocaleDateString() : 'N/A';
+
+      html += `
+      <div class="list-group-item list-group-item-action contact-item" data-name="${contact.name}" data-phone="${contact.phone}" data-birthday="${contact.birthday || ''}">
+        <div class="d-flex justify-content-between">
+          <div>
+            <strong>${contact.name}</strong><br>
+            <small class="text-muted">${contact.phone}</small>
+          </div>
+          <div class="text-end">
+            <small class="text-muted">Última visita:</small><br>
+            <small>${lastVisit}</small>
+          </div>
+        </div>
+        <div class="text-end">
+          <small class="text-muted">Aniversário:</small><br>
+          <small>${birthday}</small>
+        </div>
+        <i class="fas fa-pencil-alt edit-contact" data-id="${contact.phone}"></i>
+      </div>`;
+    });
+
+    html += '</div>';
+    contactsListEl.innerHTML = html;
+
+    // Adicionar evento de clique para preencher formulário de venda
+    document.querySelectorAll('.contact-item').forEach(item => {
+      item.addEventListener('click', function() {
+        const contactName = this.querySelector('strong').textContent;
+        const contactPhone = this.dataset.phone;
+        const contactBirthday = this.dataset.birthday;
+
+        // Extrair código do país e número
+        const phoneParts = contactPhone.match(/^(\+\d+)(\d+)$/);
+
+        if (phoneParts && phoneParts.length === 3) {
+          const countryCode = phoneParts[1];
+          const phoneNumber = phoneParts[2];
+
+          clientNameEl.value = contactName;
+          clientPhoneEl.value = phoneNumber;
+          clientBirthdayEl.value = contactBirthday;
+          countryCodeEl.value = countryCode;
+        } else {
+          clientNameEl.value = contactName;
+          clientPhoneEl.value = contactPhone;
+          clientBirthdayEl.value = contactBirthday;
+        }
+      });
+    });
+
+    // Adicionar evento de clique para edição de contato
+    document.querySelectorAll('.edit-contact').forEach(editBtn => {
+      editBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const contactPhone = this.dataset.id;
+        const contact = clientContacts.find(c => c.phone === contactPhone);
+
+        if (contact) {
+          openEditContactModal(contact);
+        }
+      });
+    });
+  }
+
+  function clearSelection() {
+    // Desmarcar todos os serviços selecionados
+    document.querySelectorAll('.service-item.selected').forEach(item => {
+      item.classList.remove('selected');
+    });
+
+    // Limpar array de serviços selecionados
+    selectedServices = [];
+
+    // Atualizar exibição
+    updateSelectedServicesDisplay();
+  }
+
+  function updateCashRegisterDisplay() {
+    if (!cashRegister.isOpen) return;
+
+    const salesTotal = dailySales.reduce((sum, sale) => {
+      return sum + (sale.paymentMethod === 'Dinheiro' ? sale.total : 0);
+    }, 0);
+
+    const advancesTotal = cashRegister.advances.reduce((sum, advance) => sum + advance.amount, 0);
+
+    displayInitialAmount.textContent = `€${cashRegister.initialAmount.toFixed(2)}`;
+    displaySalesTotal.textContent = `€${salesTotal.toFixed(2)}`;
+    displayAdvancesTotal.textContent = `€${advancesTotal.toFixed(2)}`;
+    displayCurrentBalance.textContent = `€${cashRegister.currentBalance.toFixed(2)}`;
+  }
+
+  function updateAdvancesList() {
+    if (cashRegister.advances.length === 0) {
+      advancesListEl.innerHTML = '<p class="text-muted">Nenhuma antecipação registrada</p>';
+      return;
+    }
+
+    let html = '<div class="table-responsive"><table class="table table-sm"><thead><tr>' +
+      '<th>Data</th><th>Profissional</th><th>Valor</th><th>Motivo</th>' +
+      '</tr></thead><tbody>';
+
+    cashRegister.advances.forEach(advance => {
+      const date = new Date(advance.date);
+      const formattedDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+
+      html += `<tr>
+        <td>${formattedDate}</td>
+        <td>${advance.professional}</td>
+        <td>€${advance.amount.toFixed(2)}</td>
+        <td>${advance.reason}</td>
+      </tr>`;
+    });
+
+    html += '</tbody></table></div>';
+    advancesListEl.innerHTML = html;
+  }
+
+  function updateDailySummary() {
+    if (dailySales.length === 0) {
+      dailySummaryEl.innerHTML = '<p class="text-muted">Nenhuma venda registrada hoje</p>';
+      return;
+    }
+
+    // Agrupar vendas por profissional
+    const salesByProfessional = {};
+    dailySales.forEach(sale => {
+      if (!salesByProfessional[sale.professional]) {
+        salesByProfessional[sale.professional] = [];
+      }
+      salesByProfessional[sale.professional].push(sale);
+    });
+
+    // Calcular totais de antecipação por profissional
+    const advancesByProfessional = {};
+    if (cashRegister.isOpen && cashRegister.advances.length > 0) {
+      cashRegister.advances.forEach(advance => {
+        if (!advancesByProfessional[advance.professional]) {
+          advancesByProfessional[advance.professional] = 0;
+        }
+        advancesByProfessional[advance.professional] += advance.amount;
+      });
+    }
+
+    let html = '';
+    let grandTotal = 0;
+
+    for (const professional in salesByProfessional) {
+      const professionalSales = salesByProfessional[professional];
+      const professionalTotal = professionalSales.reduce((sum, sale) => sum + sale.total, 0);
+      grandTotal += professionalTotal;
+
+      // Calcular comissão para Paula Coelho (70%)
+      const commissionRate = professional === 'Paula Coelho' ? 0.7 : 0;
+      const commission = professionalTotal * commissionRate;
+
+      // Calcular antecipações
+      const advances = advancesByProfessional[professional] || 0;
+      const toReceive = commission - advances;
+
+      html += `<div class="summary-item">
+        <div class="d-flex justify-content-between">
+          <strong>${professional}</strong>
+          <span class="professional-total">€${professionalTotal.toFixed(2)}</span>
+        </div>`;
+
+      if (professional === 'Paula Coelho') {
+        html += `<div class="d-flex justify-content-between text-muted small">
+          <span>Comissão (70%)</span>
+          <span class="commission">€${commission.toFixed(2)}</span>
+        </div>`;
+      }
+
+      if (advances > 0) {
+        html += `<div class="d-flex justify-content-between text-muted small">
+          <span>Antecipações</span>
+          <span style="color: #dc3545;">-€${advances.toFixed(2)}</span>
+        </div>
+        <div class="d-flex justify-content-between text-muted small">
+          <span>Valor a Receber</span>
+          <span style="font-weight: bold; color: ${toReceive >= 0 ? '#28a745' : '#dc3545'}">€${toReceive.toFixed(2)}</span>
+        </div>`;
+      }
+
+      html += `<div class="text-muted small">${professionalSales.length} venda(s)</div>
+      </div>`;
+    }
+
+    // Calcular porcentagens para o salão (70% Paula, 30% Studio DeVitto)
+    const paulaTotal = salesByProfessional['Paula Coelho'] ?
+      salesByProfessional['Paula Coelho'].reduce((sum, sale) => sum + sale.total, 0) : 0;
+    const studioTotal = grandTotal - paulaTotal;
+
+    html += `<div class="summary-item pt-3 mt-3 border-top">
+      <div class="d-flex justify-content-between fw-bold">
+        <span>TOTAL GERAL</span>
+        <span class="total-display">€${grandTotal.toFixed(2)}</span>
+      </div>
+      <div class="d-flex justify-content-between text-muted small">
+        <span>Studio DeVitto (30%)</span>
+        <span>€${studioTotal.toFixed(2)}</span>
+      </div>
+      <div class="d-flex justify-content-between text-muted small">
+        <span>Paula Coelho (70%)</span>
+        <span>€${paulaTotal.toFixed(2)}</span>
+      </div>
+    </div>`;
+
+    dailySummaryEl.innerHTML = html;
+  }
+
+  function checkUpcomingBirthdays() {
+  // Obter clientes com aniversário cadastrado
+  const today = new Date();
+  const todayMonth = today.getMonth() + 1; // Mês atual (1-12)
+  const todayDay = today.getDate(); // Dia atual
+  const upcomingBirthdays = [];
+
+  clientContacts.forEach(contact => {
+    if (contact.birthday) {
+      const birthday = new Date(contact.birthday);
+      const birthdayMonth = birthday.getMonth() + 1;
+      const birthdayDay = birthday.getDate();
+      
+      // Verificar se é hoje
+      if (birthdayMonth === todayMonth && birthdayDay === todayDay) {
+        upcomingBirthdays.push({
+          name: contact.name,
+          phone: contact.phone,
+          birthday: `${birthdayDay}/${birthdayMonth}`,
+          daysToBirthday: 0 // Hoje
+        });
+      }
+      // Verificar próximos 30 dias (opcional, mantendo a funcionalidade existente)
+      else {
+        const nextBirthday = new Date(today.getFullYear(), birthdayMonth - 1, birthdayDay);
+        
+        // Se o aniversário já passou este ano, considerar próximo ano
+        if (nextBirthday < today) {
+          nextBirthday.setFullYear(today.getFullYear() + 1);
+        }
+
+        const diffDays = Math.floor((nextBirthday - today) / (1000 * 60 * 60 * 24)) + 1;
+
+        // Mostrar apenas aniversários nos próximos 30 dias
+        if (diffDays > 0 && diffDays <= 30) {
+          upcomingBirthdays.push({
+            name: contact.name,
+            phone: contact.phone,
+            birthday: `${birthdayDay}/${birthdayMonth}`,
+            daysToBirthday: diffDays
+          });
+        }
+      }
+    }
+  });
+
+  // Ordenar por proximidade do aniversário (hoje primeiro, depois por dias restantes)
+  upcomingBirthdays.sort((a, b) => {
+    if (a.daysToBirthday === 0) return -1;
+    if (b.daysToBirthday === 0) return 1;
+    return a.daysToBirthday - b.daysToBirthday;
+  });
+
+  // Atualizar lista de aniversários na seção principal
+  updateBirthdayList(upcomingBirthdays);
+
+  // Atualizar menu flutuante de aniversários
+  updateFloatingBirthdayMenu(upcomingBirthdays);
+
+  if (upcomingBirthdays.length > 0) {
+    // Mostrar botão flutuante
+    birthdayFloatingBtn.classList.remove('hidden');
+    birthdayBadge.textContent = upcomingBirthdays.length;
+    birthdayBadge.classList.remove('hidden');
+  } else {
+    birthdayFloatingBtn.classList.add('hidden');
+    birthdayBadge.classList.add('hidden');
+  }
+}
+
+// No final da função checkUpcomingBirthdays(), adicione:
+if (upcomingBirthdays.some(client => client.daysToBirthday === 0)) {
+  // Mostrar alerta se houver aniversariantes hoje
+  alert(`Hoje é aniversário de ${upcomingBirthdays.filter(client => client.daysToBirthday === 0).length} cliente(s)!`);
+}
+  function updateBirthdayList(birthdays) {
+    if (birthdays.length === 0) {
+      birthdayItemsList.innerHTML = '<p class="text-muted">Nenhum aniversário próximo</p>';
+      return;
+    }
+
+    let html = '';
+
+    birthdays.forEach(client => {
+      // Determinar a classe CSS com base na proximidade do aniversário
+      let birthdayClass = '';
+      if (client.daysToBirthday === 0) {
+        birthdayClass = 'birthday-today';
+      } else if (client.daysToBirthday <= 6) {
+        birthdayClass = 'birthday-very-soon';
+      } else if (client.daysToBirthday <= 10) {
+        birthdayClass = 'birthday-soon';
+      }
+
+      html += `
+      <a href="#" class="list-group-item list-group-item-action birthday-item ${birthdayClass}"
+        data-name="${client.name}" data-phone="${client.phone}">
+        <strong>${client.name}</strong> - ${client.phone}
+        (Aniversário: ${client.birthday} - ${client.daysToBirthday === 0 ? 'Hoje!' : `em ${client.daysToBirthday} dias`})
+      </a>`;
+    });
+
+    birthdayItemsList.innerHTML = html;
+
+    // Adicionar evento de clique aos itens
+    document.querySelectorAll('.birthday-item').forEach(item => {
+      item.addEventListener('click', function(e) {
+        e.preventDefault();
+        const name = this.dataset.name;
+        const phone = this.dataset.phone;
+
+        // Extrair código do país e número
+        const phoneParts = phone.match(/^(\+\d+)(\d+)$/);
+
+        if (phoneParts && phoneParts.length === 3) {
+          const countryCode = phoneParts[1];
+          const phoneNumber = phoneParts[2];
+
+          birthdayClientNameEl.value = name;
+          birthdayClientPhoneEl.value = phoneNumber;
+          birthdayCountryCodeEl.value = countryCode;
+        } else {
+          birthdayClientNameEl.value = name;
+          birthdayClientPhoneEl.value = phone;
+        }
+      });
+    });
+  }
+
+  function updateFloatingBirthdayMenu(birthdays) {
+    if (birthdays.length === 0) {
+      birthdayFloatingList.innerHTML = '<p class="text-muted">Nenhum aniversário próximo</p>';
+      return;
+    }
+
+    let html = '';
+
+    birthdays.forEach(client => {
+      // Determinar a classe CSS com base na proximidade do aniversário
+      let birthdayClass = '';
+      if (client.daysToBirthday === 0) {
+        birthdayClass = 'birthday-today';
+      } else if (client.daysToBirthday <= 6) {
+        birthdayClass = 'birthday-very-soon';
+      } else if (client.daysToBirthday <= 10) {
+        birthdayClass = 'birthday-soon';
+      }
+
+      // Corrigir a exibição da data - mostrar "Hoje" apenas quando daysToBirthday for 0
+      let daysText = '';
+      if (client.daysToBirthday === 0) {
+        daysText = 'Hoje!';
+      } else if (client.daysToBirthday === 1) {
+        daysText = 'Amanhã!';
+      } else {
+        daysText = `em ${client.daysToBirthday} dias`;
+      }
+
+      html += `
+      <div class="birthday-floating-item ${birthdayClass}"
+        data-name="${client.name}" data-phone="${client.phone}">
+        <div class="birthday-floating-item-name">${client.name}</div>
+        <div class="birthday-floating-item-date">
+          Aniversário: ${client.birthday} - ${daysText}
+        </div>
+      </div>`;
+    });
+
+    birthdayFloatingList.innerHTML = html;
+
+    // Adicionar evento de clique aos itens
+    document.querySelectorAll('.birthday-floating-item').forEach(item => {
+      item.addEventListener('click', function() {
+        const name = this.dataset.name;
+        const phone = this.dataset.phone;
+
+        // Extrair código do país e número
+        const phoneParts = phone.match(/^(\+\d+)(\d+)$/);
+
+        if (phoneParts && phoneParts.length === 3) {
+          const countryCode = phoneParts[1];
+          const phoneNumber = phoneParts[2];
+
+          birthdayClientNameEl.value = name;
+          birthdayClientPhoneEl.value = phoneNumber;
+          birthdayCountryCodeEl.value = countryCode;
+        } else {
+          birthdayClientNameEl.value = name;
+          birthdayClientPhoneEl.value = phone;
+        }
+
+        birthdayFloatingMenu.style.display = 'none';
+
+        // Rolagem suave para a seção de aniversários
+        document.getElementById('birthdaySection').scrollIntoView({ behavior: 'smooth' });
+
+        // Abrir automaticamente o WhatsApp
+        const message = `🎉 *Feliz Aniversário, ${name}!* 🎉\n\n` +
+          `Nós do Studio DeVitto desejamos a você um dia maravilhoso cheio de alegria e felicidade!\n\n` +
+          `Como presente especial, você ganhou uma *hidratação capilar* para aproveitar no seu próximo agendamento!\n\n` +
+          `Entre em contato conosco para agendar seu horário.\n\n` +
+          `Com carinho,\nEquipe Studio DeVitto 💖`;
+
+        const encodedMessage = encodeURIComponent(message);
+        const whatsappUrl = `https://wa.me/${phone}?text=${encodedMessage}`;
+        window.open(whatsappUrl, '_blank');
+      });
+    });
+  }
+
+  function generateDailyReport() {
+    if (dailySales.length === 0) {
+      alert('Nenhuma venda registrada hoje para gerar relatório.');
+      return;
+    }
+
+    // Agrupar vendas por profissional para o relatório
+    const salesByProfessional = {};
+    dailySales.forEach(sale => {
+      if (!salesByProfessional[sale.professional]) {
+        salesByProfessional[sale.professional] = {
+          services: [],
+          total: 0,
+          commission: 0
+        };
+      }
+
+      // Adicionar serviços (sem duplicatas, apenas contagem)
+      sale.services.forEach(service => {
+        const existingService = salesByProfessional[sale.professional].services.find(
+          s => s.name === service.name && s.price === service.price
+        );
+
+        if (existingService) {
+          existingService.quantity = (existingService.quantity || 1) + 1;
+        } else {
+          salesByProfessional[sale.professional].services.push({
+            ...service,
+            quantity: 1
+          });
+        }
+      });
+
+      salesByProfessional[sale.professional].total += sale.total;
+
+      // Calcular comissão para Paula Coelho
+      if (sale.professional === 'Paula Coelho') {
+        salesByProfessional[sale.professional].commission += sale.total * 0.7;
+      }
+    });
+
+    // Calcular total geral
+    let grandTotal = 0;
+    for (const professional in salesByProfessional) {
+      grandTotal += salesByProfessional[professional].total;
+    }
+
+    // Calcular porcentagens para o salão (70% Paula, 30% Studio DeVitto)
+    const paulaTotal = salesByProfessional['Paula Coelho'] ? salesByProfessional['Paula Coelho'].total : 0;
+    const studioTotal = grandTotal - paulaTotal;
+
+    // Calcular totais de antecipação por profissional
+    const advancesByProfessional = {};
+    if (cashRegister.isOpen && cashRegister.advances.length > 0) {
+      cashRegister.advances.forEach(advance => {
+        if (!advancesByProfessional[advance.professional]) {
+          advancesByProfessional[advance.professional] = 0;
+        }
+        advancesByProfessional[advance.professional] += advance.amount;
+      });
+    }
+
+    // Obter data atual formatada
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const year = now.getFullYear();
+    const today = `${day}/${month}/${year}`;
+
+    // Gerar relatório
+    let reportHTML = `
+    <div class="report-section">
+      <div class="text-center mb-4">
+        <img src="https://studiodevitto.com/wp-content/uploads/2025/07/Logo-Studio-DeVitto.png" alt="Studio DeVitto" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">
+        <h3 style="color: #26196b; margin-top: 10px;">Studio DeVitto</h3>
+        <h4 style="color: #26196b;">Relatório Diário</h4>
+        <h5 style="color: #555;">${today}</h5>
+      </div>
+
+      <div class="mb-4" style="border-bottom: 2px solid #26196b; padding-bottom: 10px;">
+        <h5 style="color: #26196b;">Resumo do Dia</h5>
+        <div class="row">
+          <div class="col-md-6">
+            <p><strong>Total de Vendas:</strong> ${dailySales.length}</p>
+            <p><strong>Valor Inicial Caixa:</strong> €${cashRegister.initialAmount.toFixed(2)}</p>
+          </div>
+          <div class="col-md-6">
+            <p><strong>Total Geral:</strong> <span style="color: #26196b; font-weight: bold;">€${grandTotal.toFixed(2)}</span></p>
+            <p><strong>Saldo Atual Caixa:</strong> €${cashRegister.currentBalance.toFixed(2)}</p>
+          </div>
+        </div>
+      </div>`;
+
+    // Detalhes por profissional
+    for (const professional in salesByProfessional) {
+      const professionalData = salesByProfessional[professional];
+      const isPaula = professional === 'Paula Coelho';
+      const advances = advancesByProfessional[professional] || 0;
+      const toReceive = professionalData.commission - advances;
+
+      reportHTML += `
+      <div class="mb-4 professional-report">
+        <h5 style="color: #26196b; border-bottom: 1px solid #D4AF37; padding-bottom: 5px;">${professional}</h5>
+
+        <div class="table-responsive">
+          <table class="table table-sm" style="font-size: 0.9rem;">
+            <thead style="background-color: #26196b; color: white;">
+              <tr>
+                <th>Serviço</th>
+                <th style="text-align: right;">Preço Unitário</th>
+                <th style="text-align: right;">Quantidade</th>
+                <th style="text-align: right;">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>`;
+
+      professionalData.services.forEach(service => {
+        reportHTML += `
+              <tr>
+                <td>${service.name}</td>
+                <td style="text-align: right;">€${service.price.toFixed(2)}</td>
+                <td style="text-align: right;">${service.quantity}</td>
+                <td style="text-align: right;">€${(service.price * service.quantity).toFixed(2)}</td>
+              </tr>`;
+      });
+
+      reportHTML += `
+            </tbody>
+            <tfoot>
+              <tr>
+                <th colspan="3" style="text-align: right;">Total ${professional}:</th>
+                <th style="text-align: right; color: #26196b;">€${professionalData.total.toFixed(2)}</th>
+              </tr>`;
+
+      if (isPaula) {
+        reportHTML += `
+              <tr>
+                <th colspan="3" style="text-align: right;">Comissão (70%):</th>
+                <th style="text-align: right; color: #4CAF50;">€${professionalData.commission.toFixed(2)}</th>
+              </tr>`;
+      }
+
+      if (advances > 0) {
+        reportHTML += `
+              <tr>
+                <th colspan="3" style="text-align: right;">Antecipações:</th>
+                <th style="text-align: right; color: #dc3545;">-€${advances.toFixed(2)}</th>
+              </tr>
+              <tr>
+                <th colspan="3" style="text-align: right;">Valor a Receber:</th>
+                <th style="text-align: right; color: ${toReceive >= 0 ? '#28a745' : '#dc3545'}; font-weight: bold;">€${toReceive.toFixed(2)}</th>
+              </tr>`;
+      }
+
+      reportHTML += `
+            </tfoot>
+          </table>
+        </div>
+      </div>`;
+    }
+
+    // Métodos de pagamento
+    const paymentMethods = {};
+    dailySales.forEach(sale => {
+      if (!paymentMethods[sale.paymentMethod]) {
+        paymentMethods[sale.paymentMethod] = 0;
+      }
+      paymentMethods[sale.paymentMethod] += sale.total;
+    });
+
+    reportHTML += `
+      <div class="mb-4">
+        <h5 style="color: #26196b; border-bottom: 1px solid #D4AF37; padding-bottom: 5px;">Métodos de Pagamento</h5>
+        <div class="table-responsive">
+          <table class="table table-sm" style="font-size: 0.9rem;">
+            <thead style="background-color: #26196b; color: white;">
+              <tr>
+                <th>Método</th>
+                <th style="text-align: right;">Valor</th>
+              </tr>
+            </thead>
+            <tbody>`;
+
+    for (const method in paymentMethods) {
+      reportHTML += `
+              <tr>
+                <td>${method}</td>
+                <td style="text-align: right;">€${paymentMethods[method].toFixed(2)}</td>
+              </tr>`;
+    }
+
+    reportHTML += `
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <h5 style="color: #26196b; border-bottom: 1px solid #D4AF37; padding-bottom: 5px;">Antecipações</h5>
+        <div class="table-responsive">
+          <table class="table table-sm" style="font-size: 0.9rem;">
+            <thead style="background-color: #26196b; color: white;">
+              <tr>
+                <th>Profissional</th>
+                <th style="text-align: right;">Valor</th>
+                <th>Motivo</th>
+              </tr>
+            </thead>
+            <tbody>`;
+
+    if (cashRegister.advances.length > 0) {
+      cashRegister.advances.forEach(advance => {
+        const date = new Date(advance.date);
+        const formattedDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+
+        reportHTML += `
+              <tr>
+                <td>${advance.professional}</td>
+                <td style="text-align: right; color: #dc3545;">-€${advance.amount.toFixed(2)}</td>
+                <td>${advance.reason}</td>
+              </tr>`;
+      });
+    } else {
+      reportHTML += `
+              <tr>
+                <td colspan="3" class="text-muted text-center">Nenhuma antecipação registrada</td>
+              </tr>`;
+    }
+
+    reportHTML += `
+            </tbody>
+            <tfoot>
+              <tr>
+                <th>Total Antecipado</th>
+                <th style="text-align: right; color: #dc3545;">-€${cashRegister.advances.reduce((sum, a) => sum + a.amount, 0).toFixed(2)}</th>
+                <th></th>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <div class="text-center mt-4" style="border-top: 2px solid #26196b; padding-top: 15px;">
+        <h4 style="color: #26196b;">Total Geral: €${grandTotal.toFixed(2)}</h4>
+        <div class="row mt-3">
+          <div class="col-md-6">
+            <h5 style="color: #26196b;">Studio DeVitto (30%)</h5>
+            <h4 style="color: #26196b;">€${studioTotal.toFixed(2)}</h4>
+          </div>
+          <div class="col-md-6">
+            <h5 style="color: #26196b;">Paula Coelho (70%)</h5>
+            <h4 style="color: #26196b;">€${paulaTotal.toFixed(2)}</h4>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-right mt-4" style="font-size: 0.8rem; color: #777;">
+        Relatório gerado em: ${new Date().toLocaleString()}
+      </div>
+    </div>`;
+
+    // Exibir relatório
+    reportContentEl.innerHTML = reportHTML;
+  }
+
+  function closeDay() {
+    if (dailySales.length === 0) {
+      if (!confirm('Nenhuma venda registrada hoje. Deseja fechar o caixa mesmo assim?')) {
+        return;
+      }
+    }
+
+    // Gerar relatório diário primeiro
+    generateDailyReport();
+
+    // Adicionar vendas diárias ao histórico
+    const now = new Date();
+    const dayReport = {
+      date: now.toISOString(),
+      type: 'daily',
+      sales: [...dailySales],
+      total: dailySales.reduce((sum, sale) => sum + sale.total, 0),
+      advances: [...cashRegister.advances],
+      initialAmount: cashRegister.initialAmount,
+      finalBalance: cashRegister.currentBalance
+    };
+
+    salesHistory.push(dayReport);
+    localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
+
+    // Limpar vendas diárias e fechar caixa
+    dailySales = [];
+    cashRegister = {
+      isOpen: false,
+      initialAmount: 0,
+      currentBalance: 0,
+      advances: []
+    };
+
+    localStorage.setItem('dailySales', JSON.stringify(dailySales));
+    localStorage.setItem('cashRegister', JSON.stringify(cashRegister));
+
+    // Atualizar exibições
+    openCashSection.classList.remove('hidden');
+    advanceSection.classList.add('hidden');
+    updateCashRegisterDisplay();
+    updateDailySummary();
+
+    alert('Caixa diário fechado com sucesso! O relatório foi salvo no histórico.');
+  }
+
+  function generateWeeklyReport() {
+    if (salesHistory.length === 0) {
+      alert('Nenhum dado histórico disponível para gerar relatório semanal.');
+      return;
+    }
+
+    // Filtrar vendas dos últimos 7 dias
+    const now = new Date();
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    const weeklySales = salesHistory.filter(report => {
+      const reportDate = new Date(report.date);
+      return reportDate >= oneWeekAgo && report.type === 'daily';
+    });
+
+    if (weeklySales.length === 0) {
+      alert('Nenhuma venda registrada na última semana.');
+      return;
+    }
+
+    // Calcular datas de início e fim
+    const startDate = new Date(weeklySales[0].date);
+    const endDate = new Date(weeklySales[weeklySales.length - 1].date);
+
+    const startDay = String(startDate.getDate()).padStart(2, '0');
+    const startMonth = String(startDate.getMonth() + 1).padStart(2, '0');
+    const startYear = startDate.getFullYear();
+
+    const endDay = String(endDate.getDate()).padStart(2, '0');
+    const endMonth = String(endDate.getMonth() + 1).padStart(2, '0');
+    const endYear = endDate.getFullYear();
+
+    const dateRange = `${startDay}/${startMonth}/${startYear} - ${endDay}/${endMonth}/${endYear}`;
+
+    // Agrupar dados por profissional
+    const professionalData = {};
+    let weeklyTotal = 0;
+    let weeklyAdvances = 0;
+
+    weeklySales.forEach(dayReport => {
+      dayReport.sales.forEach(sale => {
+        if (!professionalData[sale.professional]) {
+          professionalData[sale.professional] = {
+            total: 0,
+            commission: 0,
+            advances: 0,
+            days: {}
+          };
+        }
+
+        // Agrupar por dia para contar dias trabalhados
+        const saleDate = new Date(sale.date);
+        const dayKey = `${saleDate.getDate()}/${saleDate.getMonth() + 1}`;
+        professionalData[sale.professional].days[dayKey] = true;
+
+        professionalData[sale.professional].total += sale.total;
+
+        if (sale.professional === 'Paula Coelho') {
+          professionalData[sale.professional].commission += sale.total * 0.7;
+        }
+      });
+
+      // Somar antecipações
+      if (dayReport.advances && dayReport.advances.length > 0) {
+        dayReport.advances.forEach(advance => {
+          if (professionalData[advance.professional]) {
+            professionalData[advance.professional].advances += advance.amount;
+          }
+          weeklyAdvances += advance.amount;
+        });
+      }
+
+      weeklyTotal += dayReport.total;
+    });
+
+    // Calcular porcentagens para o salão (70% Paula, 30% Studio DeVitto)
+    const paulaTotal = professionalData['Paula Coelho'] ? professionalData['Paula Coelho'].total : 0;
+    const studioTotal = weeklyTotal - paulaTotal;
+
+    // Gerar relatório
+    let reportHTML = `
+    <div class="report-section">
+      <div class="text-center mb-4">
+        <img src="https://studiodevitto.com/wp-content/uploads/2025/07/Logo-Studio-DeVitto.png" alt="Studio DeVitto" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">
+        <h3 style="color: #26196b; margin-top: 10px;">Studio DeVitto</h3>
+        <h4 style="color: #26196b;">Relatório Semanal</h4>
+        <h5 style="color: #555;">${dateRange}</h5>
+      </div>
+
+      <div class="mb-4" style="border-bottom: 2px solid #26196b; padding-bottom: 10px;">
+        <h5 style="color: #26196b;">Resumo Semanal</h5>
+        <div class="row">
+          <div class="col-md-6">
+            <p><strong>Período:</strong> ${dateRange}</p>
+            <p><strong>Dias com vendas:</strong> ${weeklySales.length}</p>
+          </div>
+          <div class="col-md-6">
+            <p><strong>Total de Vendas:</strong> ${weeklySales.reduce((sum, day) => sum + day.sales.length, 0)}</p>
+            <p><strong>Total Geral:</strong> <span style="color: #26196b; font-weight: bold;">€${weeklyTotal.toFixed(2)}</span></p>
+          </div>
+        </div>
+      </div>`;
+
+    // Detalhes por profissional
+    for (const professional in professionalData) {
+      const data = professionalData[professional];
+      const isPaula = professional === 'Paula Coelho';
+      const daysWorked = Object.keys(data.days).length;
+      const toReceive = data.commission - data.advances;
+
+      reportHTML += `
+      <div class="mb-4 professional-report">
+        <h5 style="color: #26196b; border-bottom: 1px solid #D4AF37; padding-bottom: 5px;">${professional}</h5>
+
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <p><strong>Dias trabalhados:</strong> ${daysWorked}</p>
+            <p><strong>Total de vendas:</strong> <span style="color: #26196b;">€${data.total.toFixed(2)}</span></p>
+          </div>
+          <div class="col-md-6">
+            ${isPaula ? `
+            <p><strong>Comissão (70%):</strong> <span style="color: #4CAF50; font-weight: bold;">€${data.commission.toFixed(2)}</span></p>
+            ` : ''}
+            ${data.advances > 0 ? `
+            <p><strong>Antecipações:</strong> <span style="color: #dc3545;">€${data.advances.toFixed(2)}</span></p>
+            <p><strong>Valor a Receber:</strong> <span style="font-weight: bold; color: ${toReceive >= 0 ? '#28a745' : '#dc3545'}">€${toReceive.toFixed(2)}</span></p>
+            ` : ''}
+          </div>
+        </div>
+      </div>`;
+    }
+
+    // Vendas por dia
+    reportHTML += `
+      <div class="mb-4">
+        <h5 style="color: #26196b; border-bottom: 1px solid #D4AF37; padding-bottom: 5px;">Vendas por Dia</h5>
+        <div class="table-responsive">
+          <table class="table table-sm" style="font-size: 0.9rem;">
+            <thead style="background-color: #26196b; color: white;">
+              <tr>
+                <th>Data</th>
+                <th style="text-align: right;">Vendas</th>
+                <th style="text-align: right;">Total</th>
+              </tr>
+            </thead>
+            <tbody>`;
+
+    weeklySales.forEach(dayReport => {
+      const reportDate = new Date(dayReport.date);
+      const day = String(reportDate.getDate()).padStart(2, '0');
+      const month = String(reportDate.getMonth() + 1).padStart(2, '0');
+      const formattedDate = `${day}/${month}/${reportDate.getFullYear()}`;
+
+      reportHTML += `
+              <tr>
+                <td>${formattedDate}</td>
+                <td style="text-align: right;">${dayReport.sales.length}</td>
+                <td style="text-align: right;">€${dayReport.total.toFixed(2)}</td>
+              </tr>`;
+    });
+
+    reportHTML += `
+            </tbody>
+            <tfoot>
+              <tr>
+                <th>Total Semanal</th>
+                <th style="text-align: right;">${weeklySales.reduce((sum, day) => sum + day.sales.length, 0)}</th>
+                <th style="text-align: right; color: #26196b;">€${weeklyTotal.toFixed(2)}</th>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <h5 style="color: #26196b; border-bottom: 1px solid #D4AF37; padding-bottom: 5px;">Antecipações</h5>
+        <p><strong>Total Antecipado na Semana:</strong> <span style="color: #dc3545;">€${weeklyAdvances.toFixed(2)}</span></p>
+      </div>
+
+      <div class="text-center mt-4" style="border-top: 2px solid #26196b; padding-top: 15px;">
+        <h4 style="color: #26196b;">Total Semanal: €${weeklyTotal.toFixed(2)}</h4>
+        <div class="row mt-3">
+          <div class="col-md-6">
+            <h5 style="color: #26196b;">Studio DeVitto (30%)</h5>
+            <h4 style="color: #26196b;">€${studioTotal.toFixed(2)}</h4>
+          </div>
+          <div class="col-md-6">
+            <h5 style="color: #26196b;">Paula Coelho (70%)</h5>
+            <h4 style="color: #26196b;">€${paulaTotal.toFixed(2)}</h4>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-right mt-4" style="font-size: 0.8rem; color: #777;">
+        Relatório gerado em: ${new Date().toLocaleString()}
+      </div>
+    </div>`;
+
+    // Exibir relatório
+    reportContentEl.innerHTML = reportHTML;
+  }
+
+  function generateMonthlyReport() {
+    if (salesHistory.length === 0) {
+      alert('Nenhum dado histórico disponível para gerar relatório mensal.');
+      return;
+    }
+
+    // Filtrar vendas do mês atual
+    const now = new Date();
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const monthlySales = salesHistory.filter(report => {
+      const reportDate = new Date(report.date);
+      return reportDate >= firstDayOfMonth && report.type === 'daily';
+    });
+
+    if (monthlySales.length === 0) {
+      alert('Nenhuma venda registrada neste mês.');
+      return;
+    }
+
+    // Agrupar dados por profissional
+    const professionalData = {};
+    let monthlyTotal = 0;
+    let monthlyAdvances = 0;
+
+    monthlySales.forEach(dayReport => {
+      dayReport.sales.forEach(sale => {
+        if (!professionalData[sale.professional]) {
+          professionalData[sale.professional] = {
+            total: 0,
+            commission: 0,
+            advances: 0,
+            days: {}
+          };
+        }
+
+        // Agrupar por dia para contar dias trabalhados
+        const saleDate = new Date(sale.date);
+        const dayKey = `${saleDate.getDate()}/${saleDate.getMonth() + 1}`;
+        professionalData[sale.professional].days[dayKey] = true;
+
+        professionalData[sale.professional].total += sale.total;
+
+        if (sale.professional === 'Paula Coelho') {
+          professionalData[sale.professional].commission += sale.total * 0.7;
+        }
+      });
+
+      // Somar antecipações
+      if (dayReport.advances && dayReport.advances.length > 0) {
+        dayReport.advances.forEach(advance => {
+          if (professionalData[advance.professional]) {
+            professionalData[advance.professional].advances += advance.amount;
+          }
+          monthlyAdvances += advance.amount;
+        });
+      }
+
+      monthlyTotal += dayReport.total;
+    });
+
+    // Calcular porcentagens para o salão (70% Paula, 30% Studio DeVitto)
+    const paulaTotal = professionalData['Paula Coelho'] ? professionalData['Paula Coelho'].total : 0;
+    const studioTotal = monthlyTotal - paulaTotal;
+
+    // Gerar relatório
+    const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+    const monthName = monthNames[now.getMonth()];
+    const year = now.getFullYear();
+
+    let reportHTML = `
+    <div class="report-section">
+      <div class="text-center mb-4">
+        <img src="https://studiodevitto.com/wp-content/uploads/2025/07/Logo-Studio-DeVitto.png" alt="Studio DeVitto" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">
+        <h3 style="color: #26196b; margin-top: 10px;">Studio DeVitto</h3>
+        <h4 style="color: #26196b;">Relatório Mensal</h4>
+        <h5 style="color: #555;">${monthName} ${year}</h5>
+      </div>
+
+      <div class="mb-4" style="border-bottom: 2px solid #26196b; padding-bottom: 10px;">
+        <h5 style="color: #26196b;">Resumo Mensal</h5>
+        <div class="row">
+          <div class="col-md-6">
+            <p><strong>Mês:</strong> ${monthName} ${year}</p>
+            <p><strong>Dias com vendas:</strong> ${monthlySales.length}</p>
+          </div>
+          <div class="col-md-6">
+            <p><strong>Total de Vendas:</strong> ${monthlySales.reduce((sum, day) => sum + day.sales.length, 0)}</p>
+            <p><strong>Total Geral:</strong> <span style="color: #26196b; font-weight: bold;">€${monthlyTotal.toFixed(2)}</span></p>
+          </div>
+        </div>
+      </div>`;
+
+    // Detalhes por profissional
+    for (const professional in professionalData) {
+      const data = professionalData[professional];
+      const isPaula = professional === 'Paula Coelho';
+      const daysWorked = Object.keys(data.days).length;
+      const toReceive = data.commission - data.advances;
+
+      reportHTML += `
+      <div class="mb-4 professional-report">
+        <h5 style="color: #26196b; border-bottom: 1px solid #D4AF37; padding-bottom: 5px;">${professional}</h5>
+
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <p><strong>Dias trabalhados:</strong> ${daysWorked}</p>
+            <p><strong>Total de vendas:</strong> <span style="color: #26196b;">€${data.total.toFixed(2)}</span></p>
+          </div>
+          <div class="col-md-6">
+            ${isPaula ? `
+            <p><strong>Comissão (70%):</strong> <span style="color: #4CAF50; font-weight: bold;">€${data.commission.toFixed(2)}</span></p>
+            ` : ''}
+            ${data.advances > 0 ? `
+            <p><strong>Antecipações:</strong> <span style="color: #dc3545;">€${data.advances.toFixed(2)}</span></p>
+            <p><strong>Valor a Receber:</strong> <span style="font-weight: bold; color: ${toReceive >= 0 ? '#28a745' : '#dc3545'}">€${toReceive.toFixed(2)}</span></p>
+            ` : ''}
+          </div>
+        </div>
+      </div>`;
+    }
+
+    // Vendas por dia
+    reportHTML += `
+      <div class="mb-4">
+        <h5 style="color: #26196b; border-bottom: 1px solid #D4AF37; padding-bottom: 5px;">Vendas por Dia</h5>
+        <div class="table-responsive">
+          <table class="table table-sm" style="font-size: 0.9rem;">
+            <thead style="background-color: #26196b; color: white;">
+              <tr>
+                <th>Data</th>
+                <th style="text-align: right;">Vendas</th>
+                <th style="text-align: right;">Total</th>
+              </tr>
+            </thead>
+            <tbody>`;
+
+    monthlySales.forEach(dayReport => {
+      const reportDate = new Date(dayReport.date);
+      const day = String(reportDate.getDate()).padStart(2, '0');
+      const month = String(reportDate.getMonth() + 1).padStart(2, '0');
+      const formattedDate = `${day}/${month}/${reportDate.getFullYear()}`;
+
+      reportHTML += `
+              <tr>
+                <td>${formattedDate}</td>
+                <td style="text-align: right;">${dayReport.sales.length}</td>
+                <td style="text-align: right;">€${dayReport.total.toFixed(2)}</td>
+              </tr>`;
+    });
+
+    reportHTML += `
+            </tbody>
+            <tfoot>
+              <tr>
+                <th>Total Mensal</th>
+                <th style="text-align: right;">${monthlySales.reduce((sum, day) => sum + day.sales.length, 0)}</th>
+                <th style="text-align: right; color: #26196b;">€${monthlyTotal.toFixed(2)}</th>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <h5 style="color: #26196b; border-bottom: 1px solid #D4AF37; padding-bottom: 5px;">Antecipações</h5>
+        <p><strong>Total Antecipado no Mês:</strong> <span style="color: #dc3545;">€${monthlyAdvances.toFixed(2)}</span></p>
+      </div>
+
+      <div class="text-center mt-4" style="border-top: 2px solid #26196b; padding-top: 15px;">
+        <h4 style="color: #26196b;">Total Mensal: €${monthlyTotal.toFixed(2)}</h4>
+        <div class="row mt-3">
+          <div class="col-md-6">
+            <h5 style="color: #26196b;">Studio DeVitto (30%)</h5>
+            <h4 style="color: #26196b;">€${studioTotal.toFixed(2)}</h4>
+          </div>
+          <div class="col-md-6">
+            <h5 style="color: #26196b;">Paula Coelho (70%)</h5>
+            <h4 style="color: #26196b;">€${paulaTotal.toFixed(2)}</h4>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-right mt-4" style="font-size: 0.8rem; color: #777;">
+        Relatório gerado em: ${new Date().toLocaleString()}
+      </div>
+    </div>`;
+
+    // Exibir relatório
+    reportContentEl.innerHTML = reportHTML;
+  }
+
+  function generateAnnualReport() {
+    if (salesHistory.length === 0) {
+      alert('Nenhum dado histórico disponível para gerar relatório anual.');
+      return;
+    }
+
+    // Filtrar vendas do ano atual
+    const now = new Date();
+    const firstDayOfYear = new Date(now.getFullYear(), 0, 1);
+
+    const annualSales = salesHistory.filter(report => {
+      const reportDate = new Date(report.date);
+      return reportDate >= firstDayOfYear && report.type === 'daily';
+    });
+
+    if (annualSales.length === 0) {
+      alert('Nenhuma venda registrada neste ano.');
+      return;
+    }
+
+    // Agrupar dados por mês e profissional
+    const monthlyData = {};
+    const professionalData = {};
+    let annualTotal = 0;
+    let annualAdvances = 0;
+
+    annualSales.forEach(dayReport => {
+      const reportDate = new Date(dayReport.date);
+      const month = reportDate.getMonth();
+      const monthKey = `${reportDate.getFullYear()}-${month}`;
+
+      if (!monthlyData[monthKey]) {
+        monthlyData[monthKey] = {
+          total: 0,
+          days: 0,
+          sales: 0,
+          advances: 0
+        };
+      }
+
+      monthlyData[monthKey].total += dayReport.total;
+      monthlyData[monthKey].days += 1;
+      monthlyData[monthKey].sales += dayReport.sales.length;
+
+      dayReport.sales.forEach(sale => {
+        if (!professionalData[sale.professional]) {
+          professionalData[sale.professional] = {
+            total: 0,
+            commission: 0,
+            advances: 0,
+            months: {}
+          };
+        }
+
+        // Agrupar por mês para contar meses trabalhados
+        professionalData[sale.professional].months[month] = true;
+
+        professionalData[sale.professional].total += sale.total;
+
+        if (sale.professional === 'Paula Coelho') {
+          professionalData[sale.professional].commission += sale.total * 0.7;
+        }
+      });
+
+      // Somar antecipações
+      if (dayReport.advances && dayReport.advances.length > 0) {
+        dayReport.advances.forEach(advance => {
+          if (professionalData[advance.professional]) {
+            professionalData[advance.professional].advances += advance.amount;
+          }
+          monthlyData[monthKey].advances += advance.amount;
+          annualAdvances += advance.amount;
+        });
+      }
+
+      annualTotal += dayReport.total;
+    });
+
+    // Calcular porcentagens para o salão (70% Paula, 30% Studio DeVitto)
+    const paulaTotal = professionalData['Paula Coelho'] ? professionalData['Paula Coelho'].total : 0;
+    const studioTotal = annualTotal - paulaTotal;
+
+    // Gerar relatório
+    const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+    const year = now.getFullYear();
+
+    let reportHTML = `
+    <div class="report-section">
+      <div class="text-center mb-4">
+        <img src="https://studiodevitto.com/wp-content/uploads/2025/07/Logo-Studio-DeVitto.png" alt="Studio DeVitto" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">
+        <h3 style="color: #26196b; margin-top: 10px;">Studio DeVitto</h3>
+        <h4 style="color: #26196b;">Relatório Anual</h4>
+        <h5 style="color: #555;">Ano de ${year}</h5>
+      </div>
+
+      <div class="mb-4" style="border-bottom: 2px solid #26196b; padding-bottom: 10px;">
+        <h5 style="color: #26196b;">Resumo Anual</h5>
+        <div class="row">
+          <div class="col-md-6">
+            <p><strong>Ano:</strong> ${year}</p>
+            <p><strong>Meses com vendas:</strong> ${Object.keys(monthlyData).length}</p>
+          </div>
+          <div class="col-md-6">
+            <p><strong>Total de Vendas:</strong> ${annualSales.reduce((sum, day) => sum + day.sales.length, 0)}</p>
+            <p><strong>Total Geral:</strong> <span style="color: #26196b; font-weight: bold;">€${annualTotal.toFixed(2)}</span></p>
+          </div>
+        </div>
+      </div>`;
+
+    // Detalhes por profissional
+    reportHTML += `
+      <div class="mb-4">
+        <h5 style="color: #26196b; border-bottom: 1px solid #D4AF37; padding-bottom: 5px;">Desempenho por Profissional</h5>
+        <div class="table-responsive">
+          <table class="table table-sm" style="font-size: 0.9rem;">
+            <thead style="background-color: #26196b; color: white;">
+              <tr>
+                <th>Profissional</th>
+                <th style="text-align: right;">Meses Trabalhados</th>
+                <th style="text-align: right;">Total</th>
+                <th style="text-align: right;">Comissão</th>
+                <th style="text-align: right;">Antec.</th>
+                <th style="text-align: right;">A Receber</th>
+              </tr>
+            </thead>
+            <tbody>`;
+
+    for (const professional in professionalData) {
+      const data = professionalData[professional];
+      const isPaula = professional === 'Paula Coelho';
+      const monthsWorked = Object.keys(data.months).length;
+      const toReceive = data.commission - data.advances;
+
+      reportHTML += `
+              <tr>
+                <td>${professional}</td>
+                <td style="text-align: right;">${monthsWorked}</td>
+                <td style="text-align: right;">€${data.total.toFixed(2)}</td>
+                <td style="text-align: right;">${isPaula ? `€${data.commission.toFixed(2)}` : '-'}</td>
+                <td style="text-align: right;">${data.advances > 0 ? `€${data.advances.toFixed(2)}` : '-'}</td>
+                <td style="text-align: right; color: ${toReceive >= 0 ? '#28a745' : '#dc3545'}">${isPaula ? `€${toReceive.toFixed(2)}` : '-'}</td>
+              </tr>`;
+    }
+
+    reportHTML += `
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+
+    // Vendas por mês
+    reportHTML += `
+      <div class="mb-4">
+        <h5 style="color: #26196b; border-bottom: 1px solid #D4AF37; padding-bottom: 5px;">Vendas por Mês</h5>
+        <div class="table-responsive">
+          <table class="table table-sm" style="font-size: 0.9rem;">
+            <thead style="background-color: #26196b; color: white;">
+              <tr>
+                <th>Mês</th>
+                <th style="text-align: right;">Dias com Vendas</th>
+                <th style="text-align: right;">Total de Vendas</th>
+                <th style="text-align: right;">Total</th>
+                <th style="text-align: right;">Antec.</th>
+              </tr>
+            </thead>
+            <tbody>`;
+
+    // Ordenar meses cronologicamente
+    const sortedMonths = Object.keys(monthlyData).sort();
+
+    sortedMonths.forEach(monthKey => {
+      const [year, month] = monthKey.split('-');
+      const monthData = monthlyData[monthKey];
+
+      reportHTML += `
+              <tr>
+                <td>${monthNames[parseInt(month)]}</td>
+                <td style="text-align: right;">${monthData.days}</td>
+                <td style="text-align: right;">${monthData.sales}</td>
+                <td style="text-align: right;">€${monthData.total.toFixed(2)}</td>
+                <td style="text-align: right; color: ${monthData.advances > 0 ? '#dc3545' : '#6c757d'}">€${monthData.advances.toFixed(2)}</td>
+              </tr>`;
+    });
+
+    reportHTML += `
+            </tbody>
+            <tfoot>
+              <tr>
+                <th>Total Anual</th>
+                <th style="text-align: right;">${annualSales.length}</th>
+                <th style="text-align: right;">${annualSales.reduce((sum, day) => sum + day.sales.length, 0)}</th>
+                <th style="text-align: right; color: #26196b;">€${annualTotal.toFixed(2)}</th>
+                <th style="text-align: right; color: #dc3545;">€${annualAdvances.toFixed(2)}</th>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <div class="text-center mt-4" style="border-top: 2px solid #26196b; padding-top: 15px;">
+        <h4 style="color: #26196b;">Total Anual: €${annualTotal.toFixed(2)}</h4>
+        <div class="row mt-3">
+          <div class="col-md-6">
+            <h5 style="color: #26196b;">Studio DeVitto (30%)</h5>
+            <h4 style="color: #26196b;">€${studioTotal.toFixed(2)}</h4>
+          </div>
+          <div class="col-md-6">
+            <h5 style="color: #26196b;">Paula Coelho (70%)</h5>
+            <h4 style="color: #26196b;">€${paulaTotal.toFixed(2)}</h4>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-right mt-4" style="font-size: 0.8rem; color: #777;">
+        Relatório gerado em: ${new Date().toLocaleString()}
+      </div>
+    </div>`;
+
+    // Exibir relatório
+    reportContentEl.innerHTML = reportHTML;
+  }
+
+  function printReport() {
+    // Verifica se há conteúdo para compartilhar
+    if (!reportContentEl.innerHTML || reportContentEl.innerHTML.includes('alert alert-info')) {
+      alert('Por favor, gere um relatório antes de imprimir.');
+      return;
+    }
+
+    // Criar um iframe invisível para impressão
+    const printFrame = document.createElement('iframe');
+    printFrame.style.position = 'absolute';
+    printFrame.style.width = '0';
+    printFrame.style.height = '0';
+    printFrame.style.border = 'none';
+    printFrame.style.left = '-9999px';
+
+    printFrame.onload = function() {
+      const printDocument = printFrame.contentWindow.document;
+      printDocument.open();
+      printDocument.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Relatório Studio DeVitto</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            img { max-width: 100px; height: auto; }
+            h2, h3, h4 { color: #26196b; }
+            table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+            th { background-color: #26196b; color: white; padding: 8px; text-align: left; }
+            td { padding: 8px; border-bottom: 1px solid #ddd; }
+            .total { font-weight: bold; color: #26196b; }
+            .footer { margin-top: 20px; font-size: 0.8em; color: #777; text-align: right; }
+          </style>
+        </head>
+        <body>
+          ${reportContentEl.innerHTML}
+        </body>
+        </html>
+      `);
+      printDocument.close();
+
+      // Adicionar pequeno delay para garantir que o conteúdo está carregado
+      setTimeout(() => {
+        printFrame.contentWindow.focus();
+        printFrame.contentWindow.print();
+
+        // Remover o iframe após a impressão
+        setTimeout(() => {
+          document.body.removeChild(printFrame);
+        }, 1000);
+      }, 500);
+    };
+
+    document.body.appendChild(printFrame);
+  }
+
+  function exportToPDF() {
+    if (reportContentEl.innerHTML.includes('alert alert-info')) {
+      alert('Por favor, gere um relatório antes de exportar para PDF.');
+      return false;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
+
+    // Configurações
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 15;
+    const maxWidth = pageWidth - 2 * margin;
+    const primaryColor = '#26196b';
+    const secondaryColor = '#D4AF37';
+
+    // Obter título e data do relatório
+    const reportTitle = reportContentEl.querySelector('h4')?.textContent || 'Relatório';
+    const reportDate = reportContentEl.querySelector('h5')?.textContent || '';
+
+    // Adicionar cabeçalho
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(38, 25, 107); // #26196b
+    doc.text('Studio DeVitto', margin, 20);
+    doc.setFontSize(14);
+    doc.text(reportTitle, margin, 27);
+    doc.setFontSize(12);
+    doc.setTextColor(100);
+    doc.text(reportDate, margin, 34);
+
+    // Adicionar linha divisória
+    doc.setDrawColor(38, 25, 107); // #26196b
+    doc.setLineWidth(0.5);
+        doc.line(margin, 38, pageWidth - margin, 38);
+
+    // Adicionar conteúdo do relatório como imagem (usando html2canvas)
+    html2canvas(reportContentEl).then(canvas => {
+      const imgData = canvas.toDataURL('image/png');
+      const imgWidth = pageWidth - 2 * margin;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      let position = 45;
+      let remainingHeight = imgHeight;
+      const pageHeight = doc.internal.pageSize.getHeight() - margin - 20; // Altura útil da página
+
+      // Adicionar a imagem em páginas se for muito grande
+      while (remainingHeight > 0) {
+        doc.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+        remainingHeight -= pageHeight;
+        position -= pageHeight;
+
+        if (remainingHeight > 0) {
+          doc.addPage();
+          position = margin;
+        }
+      }
+
+      // Adicionar rodapé
+      const totalPages = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        doc.text(`Página ${i} de ${totalPages}`, pageWidth - margin - 20, doc.internal.pageSize.getHeight() - 10);
+        doc.text(`Gerado em: ${new Date().toLocaleString()}`, margin, doc.internal.pageSize.getHeight() - 10);
+      }
+
+      // Salvar o PDF
+      doc.save(`Relatorio_Studio_DeVitto_${new Date().toISOString().slice(0, 10)}.pdf`);
+    });
+
+    return true;
+  }
+
+  function sendWhatsApp() {
+    // Verifica se há conteúdo para compartilhar
+    if (!reportContentEl.innerHTML || reportContentEl.innerHTML.includes('alert alert-info')) {
+      alert('Por favor, gere um relatório antes de compartilhar.');
+      return;
+    }
+
+    // Obter o título do relatório
+    const reportTitle = reportContentEl.querySelector('h4')?.textContent || 'Relatório Studio DeVitto';
+    
+    // Criar texto resumido para o WhatsApp
+    let whatsappText = `*${reportTitle}*\n\n`;
+    
+    // Adicionar totais gerais se existirem
+    const totals = reportContentEl.querySelectorAll('h4[style*="color: #26196b"]');
+    if (totals.length > 0) {
+      totals.forEach(total => {
+        whatsappText += `${total.textContent}\n`;
+      });
+    }
+    
+    // Adicionar data de geração
+    whatsappText += `\nGerado em: ${new Date().toLocaleString()}`;
+    
+    // Codificar o texto para URL
+    const encodedText = encodeURIComponent(whatsappText);
+    
+    // Criar o link do WhatsApp
+    const whatsappUrl = `https://wa.me/?text=${encodedText}`;
+    
+    // Abrir em uma nova janela
+    window.open(whatsappUrl, '_blank');
+  }
+
+  function savePdfLocally() {
+    if (exportToPDF()) {
+      alert('PDF gerado com sucesso!');
+    }
+  }
+
+  // Função para inicializar o template do PDF
+  function initPdfTemplate() {
+    const pdfTemplate = document.getElementById('pdfTemplate');
+    pdfTemplate.style.display = 'none';
+  }
+
+  // Inicializar o template do PDF
+  initPdfTemplate();
+
+  // Verificar aniversários periodicamente (a cada hora)
+  setInterval(checkUpcomingBirthdays, 3600000);
+});
+
+// Adicionar suporte para impressão direta do relatório
+window.addEventListener('afterprint', function() {
+  // Restaurar o estado da aplicação após impressão, se necessário
+});
+</script>
+</body>
+</html>

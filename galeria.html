@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <!-- Meta Tags Essenciais -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Galeria do Studio DeVitto - Veja nossos trabalhos e transformações">
+    <title>Galeria | Studio DeVitto</title>
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-DLG88C8BX1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-DLG88C8BX1');
+    </script>
+
+    <!-- Google Adsense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3582641575255212" crossorigin="anonymous"></script>
+
+    <!-- Favicon -->
+    <link rel="icon" href="https://studiodevitto.com/wp-content/uploads/2025/07/Logo-Studio-DeVitto.png" type="image/png">
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <!-- CSS Principal -->
+    <style>
+        /* ===== VARIÁVEIS DE CORES ===== */
+        :root {
+            --primary: #26196b;
+            --secondary: #4a3a9e;
+            --gold: #c9a769;
+            --light: #f8f5f2;
+            --dark: #1a1a1a;
+            --text: #333333;
+            --white: #ffffff;
+            --shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        /* ===== ANIMAÇÃO DAS SARDINHAS NADANDO ===== */
+        .sardinhas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            overflow: hidden;
+        }
+
+        .sardinha {
+            position: absolute;
+            width: 80px;
+            height: auto;
+            animation: nadar linear infinite;
+            opacity: 0.8;
+            filter: drop-shadow(0 0 5px rgba(0,0,0,0.3));
+        }
+
+        @keyframes nadar {
+            0% {
+                transform: translate(-150px, 100vh) rotate(0deg) scale(0.8);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.8;
+            }
+            90% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translate(calc(100vw + 150px), -150px) rotate(360deg) scale(0.8);
+                opacity: 0;
+            }
+        }
+
+        /* ===== SETA VOLTAR AO TOPO ===== */
+        .back-to-top {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background-color: var(--primary);
+            color: var(--gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 1001;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            border: none;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .back-to-top:hover {
+            background-color: var(--gold);
+            color: var(--primary);
+            transform: translateY(-3px) scale(1.1);
+        }
+
+        /* ===== BARRA DE MÚSICA ===== */
+        .music-bar {
+            background: var(--primary);
+            color: var(--white);
+            padding: 8px 0;
+            text-align: center;
+            font-size: 0.9rem;
+            position: sticky;
+            top: 0;
+            z-index: 1001;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .music-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        #musicToggle {
+            background: var(--gold);
+            color: var(--primary);
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        /* ===== MENU FLUTUANTE ===== */
+        .floating-menu {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1002;
+        }
+        
+        .menu-button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+            border: none;
+            outline: none;
+        }
+        
+        .menu-button.active {
+            transform: rotate(45deg);
+            background-color: var(--gold);
+        }
+        
+        .menu-items {
+            position: absolute;
+            bottom: 70px;
+            right: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 15px;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            transform: translateY(20px);
+        }
+        
+        .menu-items.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+        
+        .menu-item {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            color: white;
+            text-decoration: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .menu-item:hover {
+            transform: scale(1.1) translateX(-5px);
+        }
+        
+        .menu-item.whatsapp {
+            background-color: #25D366;
+        }
+        
+        .menu-item.call {
+            background-color: #2e86de;
+        }
+        
+        .menu-item.instagram {
+            background: linear-gradient(45deg, #405DE6, #5851DB, #833AB4, #C13584, #E1306C, #FD1D1D);
+        }
+        
+        .menu-item::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            right: 60px;
+            background-color: var(--primary);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        
+        .menu-item:hover::after {
+            opacity: 1;
+        }
+
+        /* ===== POPUP CONTATO ===== */
+        .contact-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1003;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .contact-popup.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .popup-content {
+            background-color: var(--white);
+            border-radius: 10px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            text-align: center;
+        }
+
+        .popup-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--primary);
+            transition: all 0.3s;
+        }
+
+        .popup-close:hover {
+            color: var(--gold);
+            transform: rotate(90deg);
+        }
+
+        .popup-title {
+            color: var(--primary);
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .popup-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .popup-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px 20px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            color: var(--white);
+        }
+
+        .popup-btn.whatsapp {
+            background-color: #25D366;
+        }
+
+        .popup-btn.whatsapp:hover {
+            background-color: #128C7E;
+            transform: translateY(-2px);
+        }
+
+        .popup-btn.call {
+            background-color: #2e86de;
+        }
+
+        .popup-btn.call:hover {
+            background-color: #1e6fbd;
+            transform: translateY(-2px);
+        }
+
+        .popup-btn i {
+            font-size: 1.2rem;
+        }
+
+        /* ===== TIPOGRAFIA ===== */
+        body {
+            font-family: 'Montserrat', sans-serif;
+            color: var(--text);
+            background-color: var(--light);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        h1, h2, h3, h4, h5 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 500;
+            color: var(--dark);
+        }
+        
+        /* ===== CABEÇALHO ===== */
+        .header-wrapper {
+            background: var(--white);
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 38px;
+            z-index: 1000;
+            width: 100%;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 5%;
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo-title-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-img {
+            height: 100px;
+            width: auto;
+            border-radius: 50%;
+            border: 0px solid var(--gold);
+            transition: transform 0.3s ease;
+        }
+
+        .logo-img:hover {
+            transform: scale(1.05);
+        }
+        
+        .blog-title {
+            margin: 0;
+            font-size: 1.8rem;
+            color: var(--primary);
+            position: relative;
+            padding-bottom: 10px;
+        }
+        
+        .blog-title:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: var(--gold);
+        }
+        
+        /* ===== MENU PRINCIPAL ===== */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 1.8rem;
+            cursor: pointer;
+            z-index: 1001;
+            padding: 10px;
+        }
+        
+        .nav-desktop {
+            background: var(--primary);
+        }
+        
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            justify-content: center;
+        }
+        
+        .nav-item {
+            position: relative;
+        }
+        
+        .nav-link {
+            color: var(--white);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 15px 20px;
+            display: block;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .nav-link i {
+            margin-right: 8px;
+            color: var(--gold);
+        }
+        
+        /* ===== BANNER PRINCIPAL (HERO) ===== */
+        .hero-section {
+            position: relative;
+            height: 60vh;
+            min-height: 600px;
+            background-image: url('https://studiodevitto.com/wp-content/uploads/2025/07/WhatsApp-Image-2025-07-17-at-13.44.19-1.jpeg');
+            background-size: center;
+            background-position: center 1350px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            background-color: rgba(38, 25, 107, 0.7);
+            background-blend-mode: overlay;
+        }
+
+        .hero-content {
+            padding: 0 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .hero-title {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            margin-bottom: 20px;
+            color: var(--white);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .hero-subtitle {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto 40px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        
+        .btn-primary {
+            background: var(--gold);
+            color: var(--dark);
+            padding: 15px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            display: inline-block;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-primary:hover {
+            background: var(--white);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        /* ===== SEÇÕES ===== */
+        .page-section {
+            padding: 80px 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 60px;
+            position: relative;
+        }
+        
+        .section-title:after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: var(--gold);
+        }
+        
+        /* ===== GALERIA ===== */
+        .gallery-section {
+            background: var(--white);
+        }
+        
+        .gallery-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+        
+        .gallery-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            aspect-ratio: 1/1;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .gallery-item:hover {
+            transform: scale(1.02);
+        }
+        
+        .gallery-item img,
+        .gallery-item video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .gallery-item .play-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--white);
+            font-size: 2.5rem;
+            opacity: 0.8;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+        
+        /* Lightbox */
+        .lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 1004;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .lightbox.active {
+            display: flex;
+        }
+        
+        .lightbox-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+        }
+        
+        .lightbox-media {
+            max-width: 100%;
+            max-height: 80vh;
+            display: block;
+            margin: 0 auto;
+        }
+        
+        .lightbox-close {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            color: var(--white);
+            font-size: 2rem;
+            cursor: pointer;
+        }
+        
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            transform: translateY(-50%);
+        }
+        
+        .lightbox-prev,
+        .lightbox-next {
+            color: var(--white);
+            font-size: 2rem;
+            cursor: pointer;
+            background: rgba(0,0,0,0.5);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Load More Button */
+        .load-more {
+            text-align: center;
+            margin-top: 40px;
+        }
+        
+        .load-more-btn {
+            background: var(--primary);
+            color: var(--white);
+            padding: 12px 30px;
+            border-radius: 30px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .load-more-btn:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
+        
+        /* ===== RODAPÉ ===== */
+        .footer {
+            background: var(--primary);
+            color: var(--white);
+            padding: 60px 5% 30px;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto 40px;
+        }
+        
+        .footer-column h3 {
+            color: var(--white);
+            margin-bottom: 25px;
+            position: relative;
+            padding-bottom: 15px;
+        }
+        
+        .footer-column h3:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 2px;
+            background: var(--gold);
+        }
+        
+        .footer-links {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-links a {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: var(--white);
+            padding-left: 5px;
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .social-link {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            transition: all 0.3s;
+        }
+        
+        .social-link:hover {
+            background: var(--gold);
+            color: var(--primary);
+            transform: translateY(-3px);
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.7);
+            font-size: 0.9rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        /* ===== MENU MOBILE ===== */
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+            
+            .nav-desktop {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 280px;
+                height: 100vh;
+                transition: all 0.5s cubic-bezier(0.77, 0.2, 0.05, 1);
+                z-index: 999;
+                overflow-y: auto;
+                box-shadow: -5px 0 15px rgba(0,0,0,0.2);
+            }
+            
+            .nav-desktop.active {
+                right: 0;
+            }
+            
+            .nav-menu {
+                flex-direction: column;
+                padding-top: 80px;
+            }
+            
+            .nav-link {
+                padding: 15px 25px;
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+            }
+            
+            .mobile-menu-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                z-index: 998;
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.3s;
+            }
+            
+            .mobile-menu-overlay.active {
+                opacity: 1;
+                visibility: visible;
+            }
+
+            /* Ajustes para o logo e título */
+            .logo-title-container {
+                flex-direction: row;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .logo-img {
+                height: 50px;
+                width: 50px;
+            }
+            
+            .blog-title {
+                font-size: 1.5rem;
+                padding-bottom: 10px;
+            }
+            
+            .blog-title:after {
+                display: block;
+                width: 40px;
+            }
+            
+            /* Ajuste no padding do header */
+            .header-content {
+                padding: 10px 5%;
+            }
+            
+            /* Ajustes para o menu flutuante em mobile */
+            .floating-menu {
+                bottom: 20px;
+                right: 20px;
+            }
+            
+            .menu-button {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
+            
+            .menu-item {
+                width: 45px;
+                height: 45px;
+                font-size: 18px;
+            }
+
+            /* Ajuste para a seta voltar ao topo */
+            .back-to-top {
+                bottom: 90px;
+                right: 20px;
+                width: 45px;
+                height: 45px;
+                font-size: 20px;
+            }
+
+            /* Ajustes para o hero */
+            .hero-section {
+                height: 50vh;
+                min-height: 300px;
+            }
+
+            .hero-title {
+                font-size: 1.8rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1rem;
+                margin-bottom: 30px;
+            }
+
+            .btn-primary {
+                padding: 12px 25px;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* ===== LAYOUT RESPONSIVO PARA MOBILE ===== */
+        @media (max-width: 600px) {
+            /* Galeria em 2 colunas para mobile */
+            .gallery-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Modo escuro */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --light: #121212;
+                --white: #1e1e1e;
+                --text: #e0e0e0;
+                --dark: #ffffff;
+            }
+            body {
+                background-color: var(--light);
+                color: var(--text);
+            }
+            .gallery-section {
+                background-color: #1e1e1e !important;
+            }
+            .footer {
+                background-color: #0d0d0d;
+            }
+        }
+
+        /* Otimizações gerais */
+        html {
+            scroll-behavior: smooth;
+        }
+        img, video {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- Animação das Sardinhas Nadando -->
+    <div class="sardinhas-container" id="sardinhasContainer"></div>
+
+    <!-- Barra de Música -->
+    <div class="music-bar">
+        <span>Música Ambiente</span>
+        <div class="music-controls">
+            <button id="musicToggle"><i class="fas fa-pause"></i></button>
+        </div>
+    </div>
+    <audio id="backgroundMusic" src="https://studiodevitto.com/wp-content/uploads/2025/07/musica-studio-devitto.mp3" loop></audio>
+
+    <!-- Popup de Contato -->
+    <div class="contact-popup" id="contactPopup">
+        <div class="popup-content">
+            <span class="popup-close" id="popupClose">&times;</span>
+            <h3 class="popup-title">Com quem deseja falar?</h3>
+            <div class="popup-buttons">
+                <a href="https://studiodevitto.com/falar-com-vittor" class="popup-btn whatsapp" target="_blank">
+                    <i class="fab fa-whatsapp"></i> Vittor Carvalho
+                </a>
+                <a href="tel:+351927431517" class="popup-btn call">
+                    <i class="fas fa-phone"></i> Ligar Agora
+                </a>
+
+               <a href="https://studiodevitto.com/agendamento" class="popup-btn whatsapp" target="_blank">
+                    <i class="fas fa-calendar-check"></i> Agendar On-Line </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cabeçalho -->
+    <header class="header-wrapper">
+        <div class="header-content">
+            <div class="logo-title-container">
+                <a href="/">
+                    <img src="https://studiodevitto.com/wp-content/uploads/2025/07/Logo-Studio-DeVitto.png" 
+                         alt="Studio DeVitto Logo" 
+                         class="logo-img">
+                </a>
+                <h1 class="blog-title">Studio DeVitto</h1>
+            </div>
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <nav class="nav-desktop" id="mainNav">
+                <ul class="nav-menu">
+                    <li class="nav-item"><a class="nav-link" href="https://studiodevitto.com/"><i class="fas fa-home"></i> Inicio</a></li>
+                    <li class="nav-item"><a class="nav-link" href="https://studiodevitto.com/servicos"><i class="fas fa-scissors"></i> Serviços</a></li>
+                    <li class="nav-item"><a class="nav-link" href="https://studiodevitto.com/galeria"><i class="fas fa-camera"></i> Galeria</a></li>
+                    <li class="nav-item"><a class="nav-link" href="https://studiodevitto.com/equipe"><i class="fas fa-users"></i> Equipe</a></li>
+                    <li class="nav-item"><a class="nav-link" href="https://studiodevitto.com/unidades"><i class="fas fa-map-marker-alt"></i> Unidades</a></li>
+                    <li class="nav-item"><a class="nav-link" href="https://studiodevitto.com/contato"><i class="fas fa-envelope"></i> Contato</a></li>
+                </ul>
+            </nav>
+            <div class="mobile-menu-overlay" id="mobileOverlay"></div>
+        </div>
+    </header>
+
+    <!-- Banner Hero -->
+    <section class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">Nossa Galeria</h1>
+            <p class="hero-subtitle">Veja os resultados dos nossos trabalhos e inspire-se</p>
+            <a href="https://studiodevitto.com/falar-com-vittor" class="btn-primary" target="_blank"><i class="fab fa-whatsapp"></i> Agende Seu Horário</a>
+        </div>
+    </section>
+  
+    <!-- Galeria -->
+    <section class="gallery-section page-section">
+        <h2 class="section-title">Trabalhos Recentes</h2>
+        
+        <div class="gallery-container" id="galleryContainer">
+            <!-- Itens da galeria serão adicionados dinamicamente via JavaScript -->
+        </div>
+        
+        <div class="load-more">
+            <button class="load-more-btn" id="loadMoreBtn">Carregar Mais</button>
+        </div>
+    </section>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-content">
+            <span class="lightbox-close" id="lightboxClose">&times;</span>
+            <div class="lightbox-nav">
+                <span class="lightbox-prev" id="lightboxPrev"><i class="fas fa-chevron-left"></i></span>
+                <span class="lightbox-next" id="lightboxNext"><i class="fas fa-chevron-right"></i></span>
+            </div>
+            <img src="" alt="" class="lightbox-media" id="lightboxMedia">
+        </div>
+    </div>
+
+    <!-- Seta Voltar ao Topo -->
+    <button class="back-to-top" id="backToTop" aria-label="Voltar ao topo">
+        <i class="fas fa-chevron-up"></i>
+    </button>
+
+    <!-- Menu Flutuante -->
+    <div class="floating-menu">
+        <div class="menu-items" id="menuItems">
+            <div class="menu-item whatsapp" data-tooltip="WhatsApp" id="whatsappBtn">
+                <i class="fab fa-whatsapp"></i>
+            </div>
+            <div class="menu-item call" data-tooltip="Ligar" id="callBtn">
+                <i class="fas fa-phone"></i>
+            </div>
+            <a href="https://instagram.com/studiodevitto" class="menu-item instagram" data-tooltip="Instagram" target="_blank">
+                <i class="fab fa-instagram"></i>
+            </a>
+        </div>
+        <button class="menu-button" id="floatingMenuButton">
+            <i class="fas fa-plus"></i>
+        </button>
+    </div>
+
+    <!-- Rodapé -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-column">
+                <h3>Studio DeVitto</h3>
+                <p>Transformando autoestimas desde 2024 com excelência em serviços de beleza e bem-estar.</p>
+                <div class="social-links">
+                    <a href="https://facebook.com/studiodevitto" class="social-link" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://instagram.com/studiodevitto" class="social-link" target="_blank"><i class="fab fa-instagram"></i></a>
+                    <a href="https://studiodevitto.com/falar-com-vittor" class="social-link" target="_blank"><i class="fab fa-whatsapp"></i></a>
+                </div>
+            </div>
+            
+            <div class="footer-column">
+                <h3>Horários</h3>
+                <ul class="footer-links">
+                    <li><strong>Amadora:</strong> Segunda a Sábado - 9:30 ás 20:00</li>
+                </ul>
+            </div>
+            
+            <div class="footer-column">
+                <h3>Contato</h3>
+                <ul class="footer-links">
+                    <li><i class="fas fa-phone-alt"></i> +351 927 431 517</li>
+                    <li><i class="fas fa-envelope"></i> vittor@studiodevitto.com</li>
+                    <li><i class="fas fa-map-marker-alt"></i> Rua de Macau, 6A, Amadora</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="copyright">
+            <p>&copy; <script>document.write(new Date().getFullYear())</script> Studio DeVitto. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Dados da galeria (pode ser substituído por uma chamada API)
+        const galleryData = [
+{ type: 'video', src: 'https://studiodevitto.com/wp-content/uploads/2025/08/b8e2ad9e1178411e9282a0241e063963.mov', alt: 'Processo de coloração' },
+            { type: 'image', src: 'https://studiodevitto.com/wp-content/uploads/2025/07/WhatsApp-Image-2025-07-17-at-13.44.26-1.jpeg', alt: 'Corte moderno com acabamento lateral' },
+  { type: 'image', src: 'https://studiodevitto.com/wp-content/uploads/2025/07/WhatsApp-Image-2025-07-17-at-13.44.26.jpeg', alt: 'Finalização de penteado' },
+  { type: 'image', src: 'https://studiodevitto.com/wp-content/uploads/2025/07/WhatsApp-Image-2025-07-17-at-13.44.25.jpeg', alt: 'Transformação capilar' },
+  { type: 'image', src: 'https://studiodevitto.com/wp-content/uploads/2025/07/WhatsApp-Image-2025-07-17-at-13.44.19-5.jpeg', alt: 'Cabelo antes e depois' },
+  { type: 'video', src: 'https://studiodevitto.com/wp-content/uploads/2025/07/WhatsApp-Video-2025-07-17-at-13.44.25.mp4', alt: 'Processo de coloração' },
+  { type: 'image', src: 'https://studiodevitto.com/wp-content/uploads/2025/07/WhatsApp-Image-2025-07-17-at-13.44.19-4.jpeg', alt: 'Coloração em andamento' },
+  { type: 'image', src: 'https://studiodevitto.com/wp-content/uploads/2025/07/WhatsApp-Image-2025-07-17-at-13.44.19-3.jpeg', alt: 'Brushing completo' },
+  { type: 'image', src: 'https://studiodevitto.com/wp-content/uploads/2025/07/WhatsApp-Image-2025-07-17-at-13.44.19-2.jpeg', alt: 'Penteado elegante' },
+  { type: 'image', src: 'https://studiodevitto.com/wp-content/uploads/2025/07/WhatsApp-Image-2025-07-17-at-13.44.19-1.jpeg', alt: 'Finalização de coloração' },
+  { type: 'image', src: 'https://studiodevitto.com/wp-content/uploads/2025/07/WhatsApp-Image-2025-07-17-at-13.44.19.jpeg', alt: 'Luzes e mechas' },
+  { type: 'image', src: 'https://studiodevitto.com/wp-content/uploads/2025/07/WhatsApp-Image-2025-07-17-at-13.44.18-1.jpeg', alt: 'Corte masculino moderno' },
+  { type: 'image', src: 'https://studiodevitto.com/wp-content/uploads/2025/07/WhatsApp-Image-2025-07-17-at-13.44.18.jpeg', alt: 'Visual renovado' },
+  { type: 'image', src: 'https://studiodevitto.com/wp-content/uploads/2025/07/DSC_0142-scaled.jpg', alt: 'Ambiente do salão' },
+  { type: 'image', src: 'https://studiodevitto.com/wp-content/uploads/2025/07/DSC_0104-scaled.jpg', alt: 'Profissional em atendimento' },
+  { type: 'image', src: 'https://studiodevitto.com/wp-content/uploads/2025/07/DSC_0163-scaled.jpg', alt: 'Massagem relaxante' },
+  { type: 'image', src: 'https://studiodevitto.com/wp-content/uploads/2025/07/DSC_0165-scaled.jpg', alt: 'Unhas decoradas' },
+  { type: 'image', src: 'https://studiodevitto.com/wp-content/uploads/2025/07/WhatsApp-Image-2025-07-19-at-09.43.33-3.jpeg', alt: 'Coloração vibrante' },
+  { type: 'image', src: 'https://studiodevitto.com/wp-content/uploads/2025/07/WhatsApp-Image-2025-07-19-at-09.43.33-4.jpeg', alt: 'Antes e depois - loiro platinado' },
+  { type: 'image', src: 'https://studiodevitto.com/wp-content/uploads/2025/07/WhatsApp-Image-2025-07-19-at-09.43.33.jpeg', alt: 'Processo de lavagem' },
+  { type: 'image', src: 'https://studiodevitto.com/wp-content/uploads/2025/07/WhatsApp-Image-2025-07-19-at-09.43.33-1.jpeg', alt: 'Técnica de matização' },
+  { type: 'image', src: 'https://studiodevitto.com/wp-content/uploads/2025/07/WhatsApp-Image-2025-07-19-at-09.43.33-2.jpeg', alt: 'Resultado do alisamento' }
+        ];
+
+        // Variáveis globais
+        let currentPage = 1;
+        const itemsPerPage = 18; // 3 colunas x 6 linhas
+        let currentLightboxIndex = 0;
+        let displayedItems = [];
+
+        // ===== INICIALIZAÇÃO DA GALERIA =====
+        document.addEventListener('DOMContentLoaded', function() {
+            // Carrega os primeiros itens
+            loadMoreItems();
+            
+            // Configura o botão "Carregar Mais"
+            document.getElementById('loadMoreBtn').addEventListener('click', loadMoreItems);
+            
+            // Inicializa outros componentes
+            initOtherComponents();
+        });
+
+        // ===== CARREGAR MAIS ITENS =====
+        function loadMoreItems() {
+            const galleryContainer = document.getElementById('galleryContainer');
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const itemsToShow = galleryData.slice(startIndex, endIndex);
+            
+            if (itemsToShow.length === 0) {
+                document.getElementById('loadMoreBtn').style.display = 'none';
+                return;
+            }
+            
+            itemsToShow.forEach((item, index) => {
+                const galleryItem = document.createElement('div');
+                galleryItem.className = 'gallery-item';
+                galleryItem.dataset.index = displayedItems.length;
+                
+                if (item.type === 'image') {
+                    galleryItem.innerHTML = `
+                        <img src="${item.src}" alt="${item.alt}">
+                    `;
+                } else {
+                    galleryItem.innerHTML = `
+                        <video muted loop>
+                            <source src="${item.src}" type="video/mp4">
+                        </video>
+                        <div class="play-icon"><i class="fas fa-play"></i></div>
+                    `;
+                }
+                
+                galleryContainer.appendChild(galleryItem);
+                displayedItems.push(item);
+                
+                // Adiciona evento de clique para abrir o lightbox
+                galleryItem.addEventListener('click', function() {
+                    openLightbox(parseInt(this.dataset.index));
+                });
+            });
+            
+            currentPage++;
+            
+            // Esconde o botão se não houver mais itens para carregar
+            if (endIndex >= galleryData.length) {
+                document.getElementById('loadMoreBtn').style.display = 'none';
+            }
+        }
+
+        // ===== LIGHTBOX =====
+        function openLightbox(index) {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxMedia = document.getElementById('lightboxMedia');
+            const item = displayedItems[index];
+            
+            currentLightboxIndex = index;
+            
+            if (item.type === 'image') {
+                lightboxMedia.src = item.src;
+                lightboxMedia.alt = item.alt;
+                lightboxMedia.style.display = 'block';
+            } else {
+                // Para vídeos, podemos usar um elemento de vídeo ou manter a imagem
+                lightboxMedia.src = item.src;
+                lightboxMedia.alt = item.alt;
+                lightboxMedia.style.display = 'block';
+            }
+            
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxMedia = document.getElementById('lightboxMedia');
+            
+            // Pausa vídeos ao fechar o lightbox
+            if (lightboxMedia.pause) lightboxMedia.pause();
+            
+            lightbox.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        function navigateLightbox(direction) {
+            let newIndex = currentLightboxIndex + direction;
+            
+            // Verifica os limites
+            if (newIndex < 0) {
+                newIndex = displayedItems.length - 1;
+            } else if (newIndex >= displayedItems.length) {
+                newIndex = 0;
+            }
+            
+            closeLightbox();
+            setTimeout(() => openLightbox(newIndex), 50);
+        }
+
+        // ===== INICIALIZAÇÃO DE OUTROS COMPONENTES =====
+        function initOtherComponents() {
+            // Lightbox
+            document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+            document.getElementById('lightboxPrev').addEventListener('click', () => navigateLightbox(-1));
+            document.getElementById('lightboxNext').addEventListener('click', () => navigateLightbox(1));
+            
+            // Fechar lightbox ao clicar fora
+            document.getElementById('lightbox').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeLightbox();
+                }
+            });
+            
+            // ===== ANIMAÇÃO DAS SARDINHAS NADANDO =====
+            const sardinhasContainer = document.getElementById('sardinhasContainer');
+            const sardinhaUrl = 'https://studiodevitto.com/wp-content/uploads/2025/07/coracao.gif';
+            
+            // Quantidade de sardinhas baseada no tamanho da tela
+            const screenWidth = window.innerWidth;
+            let sardinhasCount = 8; // padrão para mobile
+            
+            if (screenWidth >= 768 && screenWidth < 1024) {
+                sardinhasCount = 12; // tablets
+            } else if (screenWidth >= 1024) {
+                sardinhasCount = 16; // desktop
+            }
+            
+            // Criar sardinhas
+            for (let i = 0; i < sardinhasCount; i++) {
+                const sardinha = document.createElement('img');
+                sardinha.src = sardinhaUrl;
+                sardinha.className = 'sardinha';
+                sardinha.alt = 'Sardinha decorativa';
+                
+                // Configurações aleatórias
+                const startPosX = -150;
+                const startPosY = 50 + Math.random() * 50;
+                const endPosX = window.innerWidth + 150;
+                const endPosY = -150;
+                const duration = 20 + Math.random() * 20; // entre 20 e 40 segundos
+                const delay = Math.random() * 30; // atraso inicial até 30s
+                const scale = 0.2 + Math.random() * 0.5; // entre 60% e 140% do tamanho
+                const rotation = (Math.random() > 0.5 ? 1 : -1) * 360; // rotação horária ou anti-horária
+                
+                // Animação personalizada
+                const animationName = `nadar-${i}`;
+                const keyframes = `
+                    @keyframes ${animationName} {
+                        0% {
+                            transform: translate(${startPosX}px, ${startPosY}vh) rotate(0deg) scale(${scale});
+                            opacity: 0;
+                        }
+                        10% {
+                            opacity: 0.8;
+                        }
+                        90% {
+                            opacity: 0.8;
+                        }
+                        100% {
+                            transform: translate(${endPosX}px, ${endPosY}px) rotate(${rotation}deg) scale(${scale});
+                            opacity: 0;
+                        }
+                    }
+                `;
+                
+                // Adicionar os keyframes ao estilo
+                const style = document.createElement('style');
+                style.innerHTML = keyframes;
+                document.head.appendChild(style);
+                
+                // Aplicar a animação
+                sardinha.style.animation = `${animationName} ${duration}s linear ${delay}s infinite`;
+                sardinha.style.left = '0';
+                sardinha.style.top = '0';
+                
+                sardinhasContainer.appendChild(sardinha);
+            }
+
+            // ===== SETA VOLTAR AO TOPO =====
+            const backToTopButton = document.getElementById('backToTop');
+            
+            window.addEventListener('scroll', function() {
+                if (window.pageYOffset > 300) {
+                    backToTopButton.classList.add('visible');
+                } else {
+                    backToTopButton.classList.remove('visible');
+                }
+            });
+            
+            backToTopButton.addEventListener('click', function() {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+
+            // ===== MENU MOBILE =====
+            const menuToggle = document.getElementById('menuToggle');
+            const mainNav = document.getElementById('mainNav');
+            const mobileOverlay = document.getElementById('mobileOverlay');
+            
+            menuToggle.addEventListener('click', function() {
+                this.classList.toggle('active');
+                mainNav.classList.toggle('active');
+                mobileOverlay.classList.toggle('active');
+                document.body.style.overflow = mainNav.classList.contains('active') ? 'hidden' : 'auto';
+            });
+            
+            mobileOverlay.addEventListener('click', function() {
+                menuToggle.classList.remove('active');
+                mainNav.classList.remove('active');
+                this.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            });
+            
+            // Fecha o menu ao clicar em um link
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function() {
+                    menuToggle.classList.remove('active');
+                    mainNav.classList.remove('active');
+                    mobileOverlay.classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                });
+            });
+            
+            // ===== SCROLL SUAVE PARA ÂNCORAS =====
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    
+                    if (targetElement && targetId !== '#') {
+                        e.preventDefault();
+                        targetElement.scrollIntoView({
+                            behavior: 'smooth'
+                        });
+                        
+                        // Atualizar a URL sem recarregar a página
+                        if (history.pushState) {
+                            history.pushState(null, null, targetId);
+                        } else {
+                            window.location.hash = targetId;
+                        }
+                    }
+                });
+            });
+
+            // ===== PLAYER DE MÚSICA COM AUTOPLAY =====
+            const music = document.getElementById('backgroundMusic');
+            const toggleBtn = document.getElementById('musicToggle');
+            
+            // Configurações iniciais
+            music.volume = 0.3; // Volume em 30%
+            music.currentTime = 10; // Começa no segundo 10
+            
+            // Tenta iniciar automaticamente (pode ser bloqueado pelo navegador)
+            const playPromise = music.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.then(_ => {
+                    // Autoplay funcionou
+                    toggleBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                })
+                .catch(error => {
+                    // Autoplay foi bloqueado
+                    toggleBtn.innerHTML = '<i class="fas fa-play"></i>';
+                });
+            }
+            
+            // Controle do botão de música
+            toggleBtn.addEventListener('click', function() {
+                if (music.paused) {
+                    music.play();
+                    toggleBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                } else {
+                    music.pause();
+                    toggleBtn.innerHTML = '<i class="fas fa-play"></i>';
+                }
+            });
+
+            // ===== MENU FLUTUANTE =====
+            const floatingMenuButton = document.getElementById('floatingMenuButton');
+            const menuItems = document.getElementById('menuItems');
+            
+            floatingMenuButton.addEventListener('click', function() {
+                this.classList.toggle('active');
+                menuItems.classList.toggle('active');
+            });
+            
+            // Fecha o menu ao clicar fora
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.floating-menu')) {
+                    floatingMenuButton.classList.remove('active');
+                    menuItems.classList.remove('active');
+                }
+            });
+
+            // ===== POPUP DE CONTATO =====
+            const whatsappBtn = document.getElementById('whatsappBtn');
+            const callBtn = document.getElementById('callBtn');
+            const contactPopup = document.getElementById('contactPopup');
+            const popupClose = document.getElementById('popupClose');
+            
+            whatsappBtn.addEventListener('click', function() {
+                contactPopup.classList.add('active');
+                document.querySelector('.floating-menu .menu-button').classList.remove('active');
+                document.getElementById('menuItems').classList.remove('active');
+            });
+            
+            callBtn.addEventListener('click', function() {
+                contactPopup.classList.add('active');
+                document.querySelector('.floating-menu .menu-button').classList.remove('active');
+                document.getElementById('menuItems').classList.remove('active');
+            });
+            
+            popupClose.addEventListener('click', function() {
+                contactPopup.classList.remove('active');
+            });
+            
+            // Fechar popup ao clicar fora
+            contactPopup.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    contactPopup.classList.remove('active');
+                }
+            });
+
+            // Carregar mais itens quando o usuário rolar até o final da página
+            window.addEventListener('scroll', function() {
+                if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
+                    loadMoreItems();
+                }
+            });
+        }
+    </script>
+</body>
+</html>

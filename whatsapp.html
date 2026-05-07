@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <title>Envio WhatsApp - Studio DeVitto</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 30px;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    textarea, input[type="file"], select, button {
+      width: 100%;
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    label {
+      font-weight: bold;
+      margin-top: 10px;
+      display: block;
+    }
+    .success {
+      color: green;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Enviar Mensagem para Clientes (WhatsApp)</h2>
+
+    <label for="mensagem">Mensagem de Texto:</label>
+    <textarea id="mensagem" rows="5" placeholder="Digite a mensagem para os clientes..."></textarea>
+
+    <label for="midia">Imagem, Vídeo ou Áudio (somente exibição local):</label>
+    <input type="file" id="midia" accept="image/*,video/*,audio/*">
+
+    <label for="listaNumeros">Selecione os Clientes:</label>
+    <select id="listaNumeros" multiple size="10">
+      <!-- Formato correto: apenas números com DDI + número -->
+      <option value="351931781670">+351 931 781 670 (Vinicios)</option>
+      <option value="351927431517">+351 927 431 517 (Vittor)</option>
+    </select>
+
+    <button onclick="enviarMensagens()">Enviar via WhatsApp</button>
+
+    <p class="success" id="status"></p>
+  </div>
+
+  <script>
+    function enviarMensagens() {
+      const mensagem = document.getElementById("mensagem").value.trim();
+      const midia = document.getElementById("midia").files[0];
+      const numerosSelecionados = Array.from(document.getElementById("listaNumeros").selectedOptions).map(opt => opt.value);
+      const status = document.getElementById("status");
+
+      if (!mensagem && !midia) {
+        alert("Digite uma mensagem ou selecione um ficheiro de mídia.");
+        return;
+      }
+
+      if (numerosSelecionados.length === 0) {
+        alert("Selecione ao menos um cliente.");
+        return;
+      }
+
+      const mensagemCodificada = encodeURIComponent(mensagem);
+      let delay = 0;
+
+      numerosSelecionados.forEach((numero) => {
+        // Formatação: garantir que só tem números
+        const numeroLimpo = numero.replace(/\D/g, '');
+        const url = `https://wa.me/${numeroLimpo}?text=${mensagemCodificada}`;
+
+        setTimeout(() => {
+          window.open(url, '_blank');
+        }, delay);
+        delay += 1500; // espaço de 1.5s entre mensagens
+      });
+
+      status.textContent = "Mensagens abertas no WhatsApp. Envie-as manualmente.";
+    }
+  </script>
+</body>
+</html>

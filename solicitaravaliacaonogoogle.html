@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solicitar Avaliação - Studio De Vitto</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f8f9fa;
+      padding: 20px;
+      color: #333;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #26196b;
+      margin-bottom: 25px;
+      font-size: 24px;
+    }
+
+    label {
+      display: block;
+      margin: 15px 0 8px;
+      font-weight: 600;
+      color: #555;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      box-sizing: border-box;
+      font-size: 16px;
+      transition: border 0.3s;
+    }
+
+    input:focus {
+      border-color: #26196b;
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(38, 25, 107, 0.1);
+    }
+
+    button {
+      margin-top: 25px;
+      width: 100%;
+      padding: 14px;
+      background-color: #26196b;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #3b2ca1;
+    }
+
+    .logo-container {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .logo {
+      max-width: 200px;
+      height: auto;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 20px;
+      }
+      
+      h2 {
+        font-size: 20px;
+      }
+      
+      .logo {
+        max-width: 150px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="logo-container">
+      <img src="https://studiodevitto.com/wp-content/uploads/2025/07/Logo-Studio-DeVitto.png" alt="Studio De Vitto" class="logo">
+    </div>
+    
+    <h2>Solicitar Avaliação no Google</h2>
+
+    <label for="nome">Nome da cliente:</label>
+    <input type="text" id="nome" placeholder="Ex: Ana Costa" required>
+
+    <label for="telefone">WhatsApp (com código do país):</label>
+    <input type="tel" id="telefone" placeholder="Ex: 5511999999999" required>
+
+    <button onclick="enviarConviteWhatsApp()">Enviar Convite pelo WhatsApp</button>
+  </div>
+
+  <script>
+    function enviarConviteWhatsApp() {
+      const nome = document.getElementById("nome").value.trim();
+      const telefone = document.getElementById("telefone").value.trim();
+      const linkAvaliacao = "https://g.page/r/CebJa41iu0E6EAE/review";
+
+      if (!nome || !telefone) {
+        alert("Por favor, preencha todos os campos.");
+        return;
+      }
+
+      const telefoneNumerico = telefone.replace(/\D/g, '');
+      if (telefoneNumerico.length < 10) {
+        alert("Por favor, insira um número de WhatsApp válido com código do país.");
+        return;
+      }
+
+      // Mensagem com emojis testados no WhatsApp
+      const mensagem = `Olá ${nome}! 💜
+
+Esperamos que tenha gostado da sua experiência no *Studio De Vitto*!
+
+Se puder, deixe sua avaliação no nosso Google. Sua opinião é muito importante para nós! 🙏✨
+
+Clique no link abaixo para avaliar:
+🔗 ${linkAvaliacao}
+
+Muito obrigada pelo seu apoio e confiança! 💖
+
+*Equipe Studio De Vitto*`;
+
+      const mensagemCodificada = encodeURIComponent(mensagem);
+      const url = `https://wa.me/${telefoneNumerico}?text=${mensagemCodificada}`;
+      
+      window.open(url, "_blank");
+      
+      // Limpa os campos após o envio
+      document.getElementById("nome").value = '';
+      document.getElementById("telefone").value = '';
+    }
+
+    // Permite enviar com "Enter"
+    document.addEventListener('DOMContentLoaded', function() {
+      const inputs = document.querySelectorAll('input');
+      inputs.forEach(input => {
+        input.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            enviarConviteWhatsApp();
+          }
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>
